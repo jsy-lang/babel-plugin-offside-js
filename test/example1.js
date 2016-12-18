@@ -15,3 +15,9 @@ function outer(mind) ::
         2,
         3,
 
+  fs.readFile @ `${__dirname}/example1.js`, 'utf-8', (err, data) => ::
+    try ::
+      console.log(data)
+    catch (err) ::
+      console.error(err)
+
