@@ -48,32 +48,48 @@ pp.initOffside = function() {
     enumerable: true })
 }
 
-let at_offside = new Map()
-at_offside.set(tt.braceL, tt.braceR)
-at_offside.set(tt.parenL, tt.parenR)
-at_offside.set(tt.bracketL, tt.bracketR)
+let at_offside = {
+  '::':  {tt_pre: tt.braceL, tt_post: tt.braceR},
+  '@{}': {tt_pre: tt.braceL, tt_post: tt.braceR, size: 3},
+  '@:':  {tt_pre: tt.braceL, tt_post: tt.braceR, size: 2},
+
+  '@[]': {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 3},
+  '@#':  {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 2},
+  '@-':  {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 2},
+  ' ##':  {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 3},
+
+  '@':  {tt_pre: tt.parenL, tt_post: tt.parenR, size: 1},
+  //'@@':  {tt_pre: tt.parenL, tt_post: tt.parenR, size: 2},
+  //'@()': {tt_pre: tt.parenL, tt_post: tt.parenR, size: 2}, // use single-char '@ ' instead
+}
+
+pp.getTokenFromCode = function(code) {
+  if (code === 35)
+    return this.finishToken(tt.at)
+  return baseProto.getTokenFromCode.call(this, code)
+}
 
 pp.finishToken = function(type, val) {
-  baseProto.finishToken.call(this, type, val)
-
+  let op
   if (tt.doubleColon === type)
-    return this.pushOffside(tt.braceL, tt.braceR)
+    return this.finishOffsideOp(at_offside['::'])
 
   if (tt.at === type) {
-    const lh = this.lookahead()
-    if (lh.curLine !== this.state.curLine || !at_offside.has(lh.type))
-      return this.pushOffside(tt.parenL, tt.parenR)
+    const str_op = this.input.slice(this.state.pos-1, this.state.pos+2)
 
-    this.nextToken()
-    let tt_pre = this.state.type
-    assert(tt_pre === lh.type, ['failed lookahead', tt_pre])
-    this.nextToken()
-    let tt_post = this.state.type
-    assert(tt_post === at_offside.get(tt_pre), ['mismatch', tt_post, at_offside.get(tt_pre)])
+    if (/^@\s/.test(str_op))
+      return this.finishOffsideOp(at_offside['@'])
 
-    return this.pushOffside(tt_pre, tt_post) 
+    op = at_offside[str_op.slice(0,2)]
+    if (op) return this.finishOffsideOp(op)
+
+    op = at_offside[str_op]
+    if (op) return this.finishOffsideOp(op)
   }
+
+  return baseProto.finishToken.call(this, type, val)
 }
+
 
 pp.offsideBlock = function (tt_post) {
   let offside = this.offside_map
@@ -93,10 +109,13 @@ pp.offsideBlock = function (tt_post) {
   return {tt_post, last}
 }
 
-pp.pushOffside = function (tt_pre, tt_post) {
-  this.finishToken(tt_pre)
+pp.finishOffsideOp = function (op) {
+  let str = op.size ? this.input.slice(this.state.pos, this.state.pos + op.size - 1) : null
+  this.state.pos += Math.max((op.size || 0)-1, 0)
+
+  this.finishToken(op.tt_pre, str)
   if (!this.isLookahead)
-    this.state.offside.push(this.offsideBlock(tt_post))
+    this.state.offside.push(this.offsideBlock(op.tt_post))
 }
 
 pp.skipSpace = function() {
@@ -104,11 +123,11 @@ pp.skipSpace = function() {
   if (stack && stack.length) {
     tip = stack[stack.length-1]
     this.state.offside_pos = tip.last.pos1
-  } else this.state.offside_pos = null
+  } else this.state.offside_pos = -1
 
   try {
     baseProto.skipSpace.call(this)
-    this.state.offside_pos = null
+    this.state.offside_pos = -1
   } catch (err) {
     if (err !== offsideBreakout) throw err;
   }
@@ -120,7 +139,7 @@ pp.readToken = function(code) {
 
   let stack = this.state.offside
   let tip = this.isLookahead ? stack[stack.length-1] : stack.pop()
-  this.state.offside_pos = null
+  this.state.offside_pos = -1
 
   this.finishToken(tip.tt_post)
   return tip.tt_post
