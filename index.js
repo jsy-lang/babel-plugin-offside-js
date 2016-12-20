@@ -49,24 +49,11 @@ pp.initOffside = function() {
 }
 
 let at_offside = {
+  '@':   {tt_pre: tt.parenL, tt_post: tt.parenR, size: 1},
   '::':  {tt_pre: tt.braceL, tt_post: tt.braceR},
   '@{}': {tt_pre: tt.braceL, tt_post: tt.braceR, size: 3},
-  '@:':  {tt_pre: tt.braceL, tt_post: tt.braceR, size: 2},
-
   '@[]': {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 3},
-  '@#':  {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 2},
-  '@-':  {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 2},
-  ' ##':  {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 3},
-
-  '@':  {tt_pre: tt.parenL, tt_post: tt.parenR, size: 1},
-  //'@@':  {tt_pre: tt.parenL, tt_post: tt.parenR, size: 2},
-  //'@()': {tt_pre: tt.parenL, tt_post: tt.parenR, size: 2}, // use single-char '@ ' instead
-}
-
-pp.getTokenFromCode = function(code) {
-  if (code === 35)
-    return this.finishToken(tt.at)
-  return baseProto.getTokenFromCode.call(this, code)
+  // note: no '@()' -- standardize to use single-char '@ ' instead
 }
 
 pp.finishToken = function(type, val) {
@@ -110,10 +97,10 @@ pp.offsideBlock = function (tt_post) {
 }
 
 pp.finishOffsideOp = function (op) {
-  let str = op.size ? this.input.slice(this.state.pos, this.state.pos + op.size - 1) : null
-  this.state.pos += Math.max((op.size || 0)-1, 0)
+  if (op.size > 1)
+    this.state.pos += op.size - 1
 
-  this.finishToken(op.tt_pre, str)
+  this.finishToken(op.tt_pre)
   if (!this.isLookahead)
     this.state.offside.push(this.offsideBlock(op.tt_post))
 }

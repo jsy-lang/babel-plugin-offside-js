@@ -10,7 +10,7 @@ function outer(mind) ::
   else ::
     console.log @ 
       'write more code?',
-      Math.max @ ##
+      Math.max @ @[]
         1,
         2,
         3,
@@ -20,4 +20,3 @@ function outer(mind) ::
       console.log(data)
     catch (err) ::
       console.error(err)
-
