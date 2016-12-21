@@ -56,10 +56,10 @@ let tt_offside = {
   '[': tt.bracketL, ']': tt.bracketR}
 
 let at_offside = {
-  '@':   {tokenPre: '(', tokenPost: ')'},
-  '::':  {tokenPre: '{', tokenPost: '}'},
-  '@{}': {tokenPre: '{', tokenPost: '}', extraChars: 2},
-  '@[]': {tokenPre: '[', tokenPost: ']', extraChars: 2},
+  '::':  {tokenPre: '{', tokenPost: '}', nestInner: false},
+  '@':   {tokenPre: '(', tokenPost: ')', nestInner: true},
+  '@{}': {tokenPre: '{', tokenPost: '}', nestInner: true, extraChars: 2},
+  '@[]': {tokenPre: '[', tokenPost: ']', nestInner: true, extraChars: 2},
   // note: no '@()' -- standardize to use single-char '@ ' instead
 }
 
@@ -95,7 +95,8 @@ pp.offsideBlock = function (op, stackTop) {
 
   const line0 = this.state.curLine
   const first = offside_lines[line0]
-  const indent = first.indent
+  const nestInner = op.nestInner && stackTop && line0 === stackTop.first.line
+  const indent = nestInner ? stackTop.innerIndent : first.indent
   let line = 1+line0, last = first
   let innerIndent = offside_lines[line].indent
 
@@ -112,7 +113,7 @@ pp.offsideBlock = function (op, stackTop) {
   innerIndent = first.indent > innerIndent
     ? first.indent : innerIndent
 
-  return {op, innerIndent, first, last}
+  return {op, innerIndent, first, last, nestInner}
 }
 
 pp.finishOffsideOp = function (op) {

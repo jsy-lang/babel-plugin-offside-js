@@ -16,6 +16,8 @@ Object.assign(exports, {
 
 function transformExampleCode(filename, show=null) {
   filename = path.resolve(__dirname, filename)
+  if (show && 'function' !== typeof show)
+    show = showFormattedOutput
 
   return new Promise((resolve, reject) =>
     fs.readFile(filename, 'utf-8', (err, original) => {

@@ -10,10 +10,10 @@ function outer(mind) ::
   else ::
     console.log @ 
       'write more code?',
-      Math.max @ @[]
-        1,
-        2,
-        3,
+      Math.max @
+        @[] 1
+          , 2
+          , 3
 
   fs.readFile @ `${__dirname}/example1.js`, 'utf-8', (err, data) => ::
     try ::
