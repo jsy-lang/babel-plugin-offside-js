@@ -34,25 +34,32 @@ const offsideBreakout = new OffsideBreakout()
 
 pp.initOffside = function() {
   this.state.offside = []
-  this.offside_map = parseOffsideIndexMap(this.input)
+  this.offside_lines = parseOffsideIndexMap(this.input)
 
   this.state._pos = this.state.pos
   Object.defineProperty(this.state, 'pos', {
     get() { return this._pos },
     set(pos) {
       // interrupt skipSpace algorithm when we hit our position 'breakpoint'
-      if (pos === this.offside_pos)
+      let offPos = this.offsidePos
+      if (offPos>=0 && (pos > offPos))
         throw offsideBreakout
-      else this._pos = pos
+
+      this._pos = pos
     },
     enumerable: true })
 }
 
+let tt_offside = {
+  '{': tt.braceL, '}': tt.braceR, 
+  '(': tt.parenL, ')': tt.parenR, 
+  '[': tt.bracketL, ']': tt.bracketR}
+
 let at_offside = {
-  '@':   {tt_pre: tt.parenL, tt_post: tt.parenR, size: 1},
-  '::':  {tt_pre: tt.braceL, tt_post: tt.braceR},
-  '@{}': {tt_pre: tt.braceL, tt_post: tt.braceR, size: 3},
-  '@[]': {tt_pre: tt.bracketL, tt_post: tt.bracketR, size: 3},
+  '@':   {tokenPre: '(', tokenPost: ')'},
+  '::':  {tokenPre: '{', tokenPost: '}'},
+  '@{}': {tokenPre: '{', tokenPost: '}', extraChars: 2},
+  '@[]': {tokenPre: '[', tokenPost: ']', extraChars: 2},
   // note: no '@()' -- standardize to use single-char '@ ' instead
 }
 
@@ -74,81 +81,104 @@ pp.finishToken = function(type, val) {
     if (op) return this.finishOffsideOp(op)
   }
 
+  if (tt.eof === type) {
+    if (this.state.offside.length)
+      return this.popOffside()
+  }
+
   return baseProto.finishToken.call(this, type, val)
 }
 
 
-pp.offsideBlock = function (tt_post) {
-  let offside = this.offside_map
+pp.offsideBlock = function (op, stackTop) {
+  let offside_lines = this.offside_lines
 
   const line0 = this.state.curLine
-  const indent = offside[line0].indent
-  let line = 1+line0, last = offside[line0]
+  const first = offside_lines[line0]
+  const indent = first.indent
+  let line = 1+line0, last = first
+  let innerIndent = offside_lines[line].indent
 
-  while (line < offside.length) {
-    let tip = offside[line]
-    if (!tip.empty && indent >= tip.indent)
+  while (line < offside_lines.length) {
+    let cur = offside_lines[line]
+    if (cur.content && indent >= cur.indent)
       break
 
-    line++; last = tip
+    line++; last = cur
+    if (innerIndent > cur.indent)
+      innerIndent = cur.indent
   }
-  
-  return {tt_post, last}
+  // cap to 
+  innerIndent = first.indent > innerIndent
+    ? first.indent : innerIndent
+
+  return {op, innerIndent, first, last}
 }
 
 pp.finishOffsideOp = function (op) {
-  if (op.size > 1)
-    this.state.pos += op.size - 1
+  let pos0 = this.state.pos
+  if (op.extraChars)
+    this.state.pos += op.extraChars
 
-  this.finishToken(op.tt_pre)
-  if (!this.isLookahead)
-    this.state.offside.push(this.offsideBlock(op.tt_post))
+  this.finishToken(tt_offside[op.tokenPre])
+  if (this.isLookahead) return
+
+  let stack = this.state.offside
+  let stackTop = stack[stack.length - 1]
+  let blk = this.offsideBlock(op, stackTop)
+  this.state.offside.push(blk)
 }
 
 pp.skipSpace = function() {
-  let tip, stack = this.state.offside
+  let stackTop, stack = this.state.offside
   if (stack && stack.length) {
-    tip = stack[stack.length-1]
-    this.state.offside_pos = tip.last.pos1
-  } else this.state.offside_pos = -1
+    stackTop = stack[stack.length-1]
+    this.state.offsidePos = stackTop.last.posLastContent
+  } else this.state.offsidePos = -1
 
   try {
     baseProto.skipSpace.call(this)
-    this.state.offside_pos = -1
+    this.state.offsidePos = -1
   } catch (err) {
     if (err !== offsideBreakout) throw err;
   }
 }
 
 pp.readToken = function(code) {
-  if (this.state.pos+1 !== this.state.offside_pos)
+  if (this.state.pos !== this.state.offsidePos)
     return baseProto.readToken.call(this, code)
 
-  let stack = this.state.offside
-  let tip = this.isLookahead ? stack[stack.length-1] : stack.pop()
-  this.state.offside_pos = -1
+  return this.popOffside() }
 
-  this.finishToken(tip.tt_post)
-  return tip.tt_post
-}
+pp.popOffside = function() {
+  let stack = this.state.offside
+  let stackTop = this.isLookahead
+    ? stack[stack.length-1]
+    : stack.pop()
+  this.state.offsidePos = -1
+
+  let tt_post = tt_offside[stackTop.op.tokenPost]
+  this.finishToken(tt_post)
+  return tt_post }
 
 
 
 const rx_offside = /^([ \t]*)(.*)$/mg
 function parseOffsideIndexMap(input) {
-  let lines = [null], pos1=0, tip=['',pos1]
-  let ans = input.replace(rx_offside, (match, indent, content, pos0) => {
+  let lines = [null], posLastContent=0, last=['', 0]
+
+  let ans = input.replace(rx_offside, (match, indent, content, pos) => {
     if (!content) {
-      [indent, pos1] = tip // blank line; use last valid tip
+      [indent, posLastContent] = last // blank line; use last valid content as end
     } else {
-      // valid content; set tip to current indent
-      pos1 = pos0 + match.length + 1
-      tip = [indent, pos1]
+      // valid content; set last to current indent
+      posLastContent = pos + match.length
+      last = [indent, posLastContent]
     }
 
-    lines.push({pos0, pos1, line: lines.length, empty:!content, indent, content})
+    lines.push({line: lines.length, posLastContent, indent, content})
     return '' })
-  lines.push({pos0: input.length, pos1: input.length, indent:''})
+
   return lines }
 
 

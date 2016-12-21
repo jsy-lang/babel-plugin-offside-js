@@ -23,7 +23,8 @@
   "main": "index.js",
   "devDependencies": {
     "babel-cli": "^6.18.0",
-    "babel-core": "^6.21.0"
+    "babel-core": "^6.21.0",
+    "tap-lite-tester": "^0.3.6"
   },
   "scripts": {
     "test": "node test/testSimple.js"

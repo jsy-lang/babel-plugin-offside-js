@@ -1146,6 +1146,10 @@ supports-color@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-2.0.0.tgz#535d045ce6b6363fa40117084629995e9df324c7"
 
+tap-lite-tester@^0.3.6:
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/tap-lite-tester/-/tap-lite-tester-0.3.6.tgz#af7790cd8998e3bf53836f5893534472449cce4e"
+
 tar-pack@~3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/tar-pack/-/tar-pack-3.3.0.tgz#30931816418f55afc4d21775afdd6720cee45dae"

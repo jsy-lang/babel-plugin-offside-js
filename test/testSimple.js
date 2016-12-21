@@ -1,31 +1,10 @@
 'use strict'
-const fs = require('fs');
-const path = require('path');
-const babel = require('babel-core');
+const tap = require('tap-lite-tester')
+const {transformExampleCode} = require('./_xform_example')
 
-const babel_opt = {
-  plugins: [path.resolve(__dirname, '../index.js')],
-  sourceMaps: 'inline',
-}
+for(let i=1; i<=1; i++)
+  tap.test(`./example${i}.js`, t => {
+    return transformExampleCode(`./example${i}.js`) })
 
-
-fs.readFile(path.resolve(__dirname, './example1.js'), 'utf-8', (err, original) => {
-  if (err) throw err;
-
-  let res = babel.transform(original, babel_opt)
-  console.log()
-  console.log("#### Original:")
-  console.log()
-  console.log('```javascript')
-  console.log(original)
-  console.log('```')
-  console.log()
-
-  console.log()
-  console.log("#### Transformed:")
-  console.log()
-  console.log('```javascript')
-  console.log(res.code)
-  console.log('```')
-  console.log()
-})
+tap.finish()
+  .catch(console.error)
