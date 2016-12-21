@@ -4,7 +4,7 @@ const path = require('path')
 const babel = require('babel-core')
 
 const babel_opt = {
-  plugins: [path.resolve(__dirname, '../index.js')],
+  plugins: [path.resolve(__dirname, '../dist/')],
   //sourceMaps: 'inline',
 }
 

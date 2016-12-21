@@ -38,16 +38,16 @@ pp.initOffside = function() ::
   this.offside_lines = parseOffsideIndexMap(this.input)
 
   this.state._pos = this.state.pos
-  Object.defineProperty @ this.state, 'pos', ::
-    enumerable: true
-    , get() :: return this._pos
-    , set(pos) ::
-      // interrupt skipSpace algorithm when we hit our position 'breakpoint'
-      let offPos = this.offsidePos
-      if (offPos>=0 && (pos > offPos))
-        throw offsideBreakout
+  Object.defineProperty @ this.state, 'pos',
+    @{} enumerable: true
+      , get() :: return this._pos
+      , set(pos) ::
+          // interrupt skipSpace algorithm when we hit our position 'breakpoint'
+          let offPos = this.offsidePos
+          if (offPos>=0 && (pos > offPos))
+            throw offsideBreakout
 
-      this._pos = pos
+          this._pos = pos
 
 
 let tt_offside =
