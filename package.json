@@ -34,7 +34,7 @@
   "scripts": {
     "watch": "npm -s run build -- --watch",
     "build": "babel --source-maps true index.js -o dist/index.js",
-    "debug": "OFFSIDE_DEBUG=true node test/testSimple.js",
-    "test": "node test/testSimple.js"
+    "debug": "OFFSIDE_DEBUG=true babel-node test/testSimple.js",
+    "test": "babel-node test/testSimple.js"
   }
 }
