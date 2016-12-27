@@ -55,25 +55,21 @@ let tt_offside = { '{': tt.braceL, '}': tt.braceR,
   '[': tt.bracketL, ']': tt.bracketR };
 
 let at_offside = { '::': { tokenPre: '{', tokenPost: '}', nestInner: false },
+  '::@': { tokenPre: '(', tokenPost: ')', nestInner: false, extraChars: 1 },
+  '::()': { tokenPre: '(', tokenPost: ')', nestInner: false, extraChars: 2 },
+  '::{}': { tokenPre: '{', tokenPost: '}', nestInner: false, extraChars: 2 },
+  '::[]': { tokenPre: '[', tokenPost: ']', nestInner: false, extraChars: 2 },
   '@': { tokenPre: '(', tokenPost: ')', nestInner: true },
+  '@()': { tokenPre: '{', tokenPost: '}', nestInner: true, extraChars: 2 },
   '@{}': { tokenPre: '{', tokenPost: '}', nestInner: true, extraChars: 2 },
   '@[]': { tokenPre: '[', tokenPost: ']', nestInner: true, extraChars: 2 }
-  // note: no '@()' -- standardize to use single-char '@ ' instead
+  // note:  no '@()' -- standardize to use single-char '@ ' instead
 };pp.finishToken = function (type, val) {
   let op;
-  if (tt.doubleColon === type) {
-    return this.finishOffsideOp(at_offside['::']);
-  }
-
-  if (tt.at === type) {
-    const str_op = this.input.slice(this.state.pos - 1, this.state.pos + 2);
-
-    if (/^@\s/.test(str_op)) {
-      return this.finishOffsideOp(at_offside['@']);
-    }
-
-    op = at_offside[str_op.slice(0, 2)];
-    if (op) return this.finishOffsideOp(op);
+  if (tt.at === type || tt.doubleColon === type) {
+    const pos0 = this.state.start,
+          pos1 = this.state.pos + 2;
+    const str_op = this.input.slice(pos0, pos1).split(/\s/, 1)[0];
 
     op = at_offside[str_op];
     if (op) return this.finishOffsideOp(op);
