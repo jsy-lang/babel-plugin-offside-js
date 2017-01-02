@@ -188,5 +188,4 @@ module.exports = exports = babel => ({
 Object.assign(exports, {
   hookBabylon,
   parseOffsideIndexMap });
-
 //# sourceMappingURL=index.js.map
