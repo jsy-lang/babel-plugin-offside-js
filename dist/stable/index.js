@@ -49,7 +49,7 @@ pp.initOffside = function () {
   this.state.offside = [];
   this.state.offsideNextOp = null;
   this.offside_lines = parseOffsideIndexMap(this.input);
-  this.offsidePluginOpts = _g_offsidePluginOpts || default_offsidePluginOpts;
+  this.offsidePluginOpts = _g_offsidePluginOpts || {};
   _g_offsidePluginOpts = null;
 
   this.state._pos = this.state.pos;
@@ -303,7 +303,8 @@ module.exports = exports = babel => {
     name: babel_plugin_id,
     manipulateOptions(opts, parserOpts) {
       parserOpts.plugins.push('decorators', 'functionBind');
-      parserOpts.offsidePluginOpts = opts.plugins.filter(plugin => plugin[0] && babel_plugin_id === plugin[0].key).pop()[1];
+      const offsidePluginOpts = opts.plugins.filter(plugin => plugin[0] && babel_plugin_id === plugin[0].key).map(plugin => plugin[1]).pop();
+      parserOpts.offsidePluginOpts = offsidePluginOpts || default_offsidePluginOpts;
     } };
 };
 
