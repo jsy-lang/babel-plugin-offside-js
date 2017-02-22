@@ -30,7 +30,9 @@ function hookBabylon() {
   };
 
   babylon.parse('{}');
-  if (!Parser) throw new Error("Failed to hook Babylon Parser");
+  if (!Parser) {
+    throw new Error("Failed to hook Babylon Parser");
+  }
   return Parser;
 }
 
@@ -57,7 +59,9 @@ pp.initOffside = function () {
     }, set(pos) {
       // interrupt skipSpace algorithm when we hit our position 'breakpoint'
       let offPos = this.offsidePos;
-      if (offPos >= 0 && pos > offPos) throw offsideBreakout;
+      if (offPos >= 0 && pos > offPos) {
+        throw offsideBreakout;
+      }
 
       this._pos = pos;
     } });
@@ -118,8 +122,8 @@ pp.finishToken = function (type, val) {
     } else if (lookahead.offsideRecentOp === at_offside['@']) {
       this.state.offsideNextOp = at_offside.keyword_args;
     } else if (this.offsidePluginOpts.keyword_blocks) {
-      if (tt._catch === type) {
-        // the following linting approach doesn't work for catch statements
+      if (tt._catch === type || tt._for == type) {
+        // the following linting approach doesn't work for catch or for statements
       } else {
           this.state.offsideNextOp = at_offside.keyword_lint;
         }
@@ -233,7 +237,9 @@ pp.skipSpace = function () {
     this._base_skipSpace();
     this.state.offsidePos = -1;
   } catch (err) {
-    if (err !== offsideBreakout) throw err;
+    if (err !== offsideBreakout) {
+      throw err;
+    }
   }
 };
 

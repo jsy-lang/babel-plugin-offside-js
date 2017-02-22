@@ -118,8 +118,8 @@ pp.finishToken = function(type, val) ::
     else if (lookahead.offsideRecentOp === at_offside['@']) ::
       this.state.offsideNextOp = at_offside.keyword_args
     else if (this.offsidePluginOpts.keyword_blocks) ::
-      if (tt._catch === type) ::
-        // the following linting approach doesn't work for catch statements
+      if (tt._catch === type || tt._for == type) ::
+        // the following linting approach doesn't work for catch or for statements
       else ::
         this.state.offsideNextOp = at_offside.keyword_lint
 
