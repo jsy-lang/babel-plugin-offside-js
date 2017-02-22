@@ -12,3 +12,6 @@ try ::
 
 finally ::
   5
+
+if isWorking ::
+  1942

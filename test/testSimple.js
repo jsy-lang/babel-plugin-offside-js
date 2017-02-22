@@ -1,4 +1,4 @@
-'use strict'
+require('source-map-support').install()
 const tap = require('tap-lite-tester')
 const {transformExampleCode} = require('./_xform_example')
 

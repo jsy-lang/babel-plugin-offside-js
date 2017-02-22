@@ -3,6 +3,15 @@ const assert = require('assert')
 const babylon = require('babylon')
 const tt = babylon.tokTypes
 
+var _g_offsidePluginOpts
+const default_offsidePluginOpts =
+  @{} keyword_blocks: true
+
+const _base_module_parse = babylon.parse
+babylon.parse = (input, options) => ::
+  _g_offsidePluginOpts = options ? options.offsidePluginOpts : undefined
+  return _base_module_parse(input, options)
+
 const Parser = hookBabylon()
 const baseProto = Parser.prototype
 const pp = Parser.prototype = Object.create(baseProto)
@@ -19,15 +28,16 @@ function hookBabylon() ::
     Parser = this.constructor
 
   babylon.parse('{}')
-  if (!Parser)
+  if (!Parser) ::
     throw new Error @ "Failed to hook Babylon Parser"
   return Parser
 
 
 
+pp._base_parse = baseProto.parse
 pp.parse = function() ::
   this.initOffside()
-  return baseProto.parse.call(this)
+  return this._base_parse()
 
 
 class OffsideBreakout extends Error {}
@@ -37,6 +47,8 @@ pp.initOffside = function() ::
   this.state.offside = []
   this.state.offsideNextOp = null
   this.offside_lines = parseOffsideIndexMap(this.input)
+  this.offsidePluginOpts = _g_offsidePluginOpts || default_offsidePluginOpts
+  _g_offsidePluginOpts = null
 
   this.state._pos = this.state.pos
   Object.defineProperty @ this.state, 'pos',
@@ -45,7 +57,7 @@ pp.initOffside = function() ::
       , set(pos) ::
           // interrupt skipSpace algorithm when we hit our position 'breakpoint'
           let offPos = this.offsidePos
-          if (offPos>=0 && (pos > offPos))
+          if (offPos>=0 && (pos > offPos)) ::
             throw offsideBreakout
 
           this._pos = pos
@@ -75,6 +87,24 @@ let at_offside =
     , '@[]':  {tokenPre: '[', tokenPost: ']', nestInner: true, extraChars: 2}
     // note:  no '@()' -- standardize to use single-char '@ ' instead
     , keyword_args: {tokenPre: '(', tokenPost: ')', nestInner: false, inKeywordArg: true}
+    , keyword_lint: {tokenPre: '(', tokenPost: ')', nestInner: false, inKeywordArg: true}
+
+pp._base_parseParenExpression = baseProto.parseParenExpression
+pp.parseParenExpression = function () ::
+  try ::
+    return this._base_parseParenExpression()
+  catch (err) ::
+    if (!this.offsidePluginOpts.keyword_blocks) ::
+      throw err
+
+    const stack = this.state.offside
+    const stackTop = stack[stack.length - 1]
+    if (!stackTop || !stackTop.inKeywordArg) ::
+      throw err
+    if (!err.message.startsWith('Unexpected token, expected )')) ::
+      throw err
+
+    this.raise @ stackTop.first.posLastContent, `Keyword with arguments should be followed by a code block. ('::' or '{}')`
 
 pp._base_finishToken = baseProto.finishToken
 pp.finishToken = function(type, val) ::
@@ -87,17 +117,19 @@ pp.finishToken = function(type, val) ::
       this.state.offsideNextOp = at_offside.keyword_args
     else if (lookahead.offsideRecentOp === at_offside['@']) ::
       this.state.offsideNextOp = at_offside.keyword_args
-    else ::
-      // good spot for an option flag for flagging potential errors
+    else if (this.offsidePluginOpts.keyword_blocks) ::
+      if (tt._catch === type) ::
+        // the following linting approach doesn't work for catch statements
+      else ::
+        this.state.offsideNextOp = at_offside.keyword_lint
 
     return this._base_finishToken(type, val)
 
   if (!isLookahead && tt_offside_keyword_with_block.has(type)) ::
-    const lookahead = this.lookahead()
-    if (tt.braceL !== lookahead.type && tt._if !== lookahead.type) ::
-      // good spot for an option flag for flagging potential errors
-      console.log @ lookahead.type, 
-      this.raise @ this.state.pos, `Keyword "${type.label}" should be followed by a code block. ('::' or '{}' or 'if')`
+    if (this.offsidePluginOpts.keyword_blocks) ::
+      const lookahead = this.lookahead()
+      if (tt.braceL !== lookahead.type && tt._if !== lookahead.type) ::
+          this.raise @ this.state.pos, `Keyword "${type.label}" should be followed by a code block. ('::' or '{}' or 'if')`
 
     return this._base_finishToken(type, val)
 
@@ -144,7 +176,7 @@ pp.offsideBlock = function (op, stackTop) ::
 
 pp.finishOffsideOp = function (op) ::
   this.state.offsideRecentOp = op
-  let stack = this.state.offside
+  const stack = this.state.offside
   let stackTop = stack[stack.length - 1]
   if (stackTop && stackTop.inKeywordArg && op.codeBlock) ::
     this.popOffside()
@@ -168,7 +200,8 @@ pp._base_skipSpace = baseProto.skipSpace
 pp.skipSpace = function() ::
   if (null !== this.state.offsideNextOp) :: return
 
-  let stackTop, stack = this.state.offside
+  const stack = this.state.offside
+  let stackTop
   if (stack && stack.length) ::
     stackTop = stack[stack.length-1]
     this.state.offsidePos = stackTop.last.posLastContent
@@ -178,7 +211,7 @@ pp.skipSpace = function() ::
     this._base_skipSpace()
     this.state.offsidePos = -1
   catch (err) ::
-    if (err !== offsideBreakout) throw err
+    if (err !== offsideBreakout) :: throw err
 
 
 pp._base_readToken = baseProto.readToken
@@ -195,7 +228,7 @@ pp.readToken = function(code) ::
     return this._base_readToken(code)
 
 pp.popOffside = function() ::
-  let stack = this.state.offside
+  const stack = this.state.offside
   let stackTop = this.isLookahead
     ? stack[stack.length-1]
     : stack.pop()
@@ -227,10 +260,15 @@ function parseOffsideIndexMap(input) ::
 
 
 
-module.exports = exports = (babel) => @
-  @{}
-    manipulateOptions(opts, parserOpts) ::
-      parserOpts.plugins.push('decorators', 'functionBind')
+const babel_plugin_id = `babel-plugin-offside--${Date.now()}`
+module.exports = exports = (babel) => ::
+  return ::
+    name: babel_plugin_id
+    , manipulateOptions(opts, parserOpts) ::
+        parserOpts.plugins.push('decorators', 'functionBind')
+        parserOpts.offsidePluginOpts = opts.plugins
+          .filter @ plugin => plugin[0] && babel_plugin_id === plugin[0].key
+          .pop()[1]
 
 
 Object.assign @ exports,
