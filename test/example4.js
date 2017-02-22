@@ -1,4 +1,4 @@
-::
+function outer() ::
 
   if (expr) { blockStatement }
   else if (expr) { blockStatement }

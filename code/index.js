@@ -72,6 +72,9 @@ let tt_offside_keyword_with_args = new Set @
   @[] tt._if, tt._while, tt._for
     , tt._catch, tt._switch
 
+let tt_offside_keyword_lookahead_skip = new Set @
+  @[] tt.parenL, tt.colon, tt.comma, tt.dot
+
 let at_offside =
   @{} '::':   {tokenPre: '{', tokenPost: '}', nestInner: false, codeBlock: true}
     , '::@':  {tokenPre: '(', tokenPost: ')', nestInner: false, extraChars: 1}
@@ -90,17 +93,16 @@ pp.finishToken = function(type, val) ::
   const state = this.state
   state.offsideRecentOp = null
 
-  let isKeywordAllowed = !this.isLookahead
-    && tt.dot !== state.type
+  if (tt_offside_keyword_with_args.has(type)) ::
+    let isKeywordAllowed = !this.isLookahead
+      && tt.dot !== state.type
 
-  if (isKeywordAllowed && state.exprAllowed && state.context.length) ::
-    const tip_context = state.context[state.context.length-1]
-    isKeywordAllowed = !tip_context || !tip_context.isExpr
+    if (!isKeywordAllowed) ::
+      return this._base_finishToken(type, val)
 
-  if (isKeywordAllowed && tt_offside_keyword_with_args.has(type)) ::
     const lookahead = this.lookahead()
 
-    if (tt.parenL !== lookahead.type) ::
+    if (!tt_offside_keyword_lookahead_skip.has(lookahead.type)) ::
       state.offsideNextOp = at_offside.keyword_args
     else if (lookahead.offsideRecentOp === at_offside['@']) ::
       state.offsideNextOp = at_offside.keyword_args

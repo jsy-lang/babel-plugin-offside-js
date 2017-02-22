@@ -1,4 +1,4 @@
-::
+const outer = () => ::
 
   if (expr) { blockStatement }
   else if (expr) { blockStatement }
@@ -57,7 +57,6 @@
 
   try :: tryblock
   catch expr :: blockStatement
-
 
   promise.catch(err => err)
   promise.catch @ err => err
