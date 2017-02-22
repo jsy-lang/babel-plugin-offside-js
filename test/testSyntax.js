@@ -1,4 +1,4 @@
-require('source-map-support').install()
+'use strict'
 
 //
 //
@@ -14,12 +14,28 @@ require('source-map-support').install()
 //
 //
 
-const tap = require('tap-lite-tester')
+import tap from 'tap-lite-tester'
 
 tap.start()
 
 
-tap.todo @ 'Whiles work with parens'
+tap.test @ 'Whiles work with parens',
+  t => ::
+    let x = 10,
+        y = 1,
+      tarr = [],
+      dec = num => num - 1
+
+      t.equal @ tarr.length, 0
+
+      const compare = (x, y) => x > y
+
+      while @ compare @ x, y ::
+        tarr.push @ x
+        x = dec @ x
+
+      t.equal @ tarr.length, 9
+
 tap.test @ 'Whiles work without parens', 
   t => ::
     let x = 10,
@@ -30,13 +46,31 @@ tap.test @ 'Whiles work without parens',
       t.equal @ tarr.length, 0
 
       const compare = (x, y) => x > y
+
       while compare @ x, y ::
         tarr.push @ x
         x = dec @ x
 
       t.equal @ tarr.length, 9
 
-tap.todo @ 'Fors work with parens'
+tap.test @ 'Fors work with parens',
+  t => ::
+    let tarr = 
+      @[] "whale"
+        , "lion"
+        , "frog"
+        , "cat"
+
+    const tmap = 
+      @{} whale: "whale"
+        , lion: "lion"
+        , frog: "frog"
+        , cat : "cat"
+   
+    
+    for (let item of tarr) ::
+      t.equal @ item, tmap[item]
+
 tap.test @ 'Fors work without parens', 
   t => ::
     let tarr = 
@@ -56,9 +90,22 @@ tap.test @ 'Fors work without parens',
       t.equal @ item, tmap[item]
 
 
-tap.todo @ 'if works with parens'
+tap.test @ 'If works with parens',
+  t => ::
+    let first_test = true
+    let second_test = false
+
+
+    if (first_test) ::
+      second_test = true
+    
+    if (second_test) ::
+      first_test = false
+    
+    t.equal(first_test, false)
+
 tap.test @ 'If works without parens', 
-  function (t) ::
+  t => ::
     let first_test = true
     let second_test = false
 
@@ -71,20 +118,87 @@ tap.test @ 'If works without parens',
     
     t.equal(first_test, false)
 
-tap.todo @ 'Else works with parens'
-tap.todo @ 'Else works without parens'
+tap.test @ 'Else works with parens',
+  t => ::
+    let x = false, out,
+        y = true
+    if (x) ::
+      out = x
+
+    else if (y) ::
+      out = y
+
+    else
+      out = ''
+    
+    t.equal @ out, y
+
+tap.test @ 'Else works without parens',
+  t => ::
+    let x = false, out,
+        y = true
+    if x ::
+      out = x
+
+    else if y ::
+      out = y
+
+    else
+      out = ''
+    
+    t.equal @ out, y
 
 
-tap.todo @ 'Catch works with parens'
-tap.todo @ 'Catch works without parens'
+tap.test @ 'Catch works with parens',
+  t => ::
+    try ::
+      throw new Error @ "error msg"
 
-tap.todo @ 'Try works with parens'
-tap.todo @ 'Try works without parens'
+    catch (error) ::
+      t.equal @ "error msg", error.message
 
-tap.todo @ 'Catch works with parens'
-tap.todo @ 'Catch works without parens'
+tap.test @ 'Catch works without parens',
+  t => ::
+    try ::
+      throw new Error @ "error msg"
 
+    catch error ::
+      t.equal @ "error msg", error.message
 
+tap.test @ 'do while works without parens',
+  t => ::
+    let x = 1, 
+        y = 10, 
+     tarr = []
 
+    t.equal @ tarr.length, 0
+
+    let dec = i => i - 1
+
+    do ::
+      tarr.push(x)
+      y = dec @ y
+
+    while y > x
+
+    t.equal @ tarr.length, 9
+
+tap.test @ 'do while works with parens',
+  t => ::
+    let x = 1, 
+        y = 10, 
+     tarr = []
+
+    t.equal @ tarr.length, 0
+
+    let dec = i => i - 1
+
+    do ::
+      tarr.push(x)
+      y = dec @ y
+
+    while (y > x)
+
+    t.equal @ tarr.length, 9
 
 tap.finish()
