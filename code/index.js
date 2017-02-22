@@ -108,40 +108,48 @@ pp.parseParenExpression = function () ::
 
 pp._base_finishToken = baseProto.finishToken
 pp.finishToken = function(type, val) ::
-  this.state.offsideRecentOp = null
+  const state = this.state
+  state.offsideRecentOp = null
 
-  const isLookahead = this.isLookahead
-  if (!isLookahead && tt_offside_keyword_with_args.has(type)) ::
+  let isKeywordAllowed = !this.isLookahead
+    && tt.dot !== state.type
+
+  if (isKeywordAllowed && state.exprAllowed && state.context.length) ::
+    const tip_context = state.context[state.context.length-1]
+    isKeywordAllowed = !tip_context || !tip_context.isExpr
+
+  if (isKeywordAllowed && tt_offside_keyword_with_args.has(type)) ::
     const lookahead = this.lookahead()
+
     if (tt.parenL !== lookahead.type) ::
-      this.state.offsideNextOp = at_offside.keyword_args
+      state.offsideNextOp = at_offside.keyword_args
     else if (lookahead.offsideRecentOp === at_offside['@']) ::
-      this.state.offsideNextOp = at_offside.keyword_args
+      state.offsideNextOp = at_offside.keyword_args
     else if (this.offsidePluginOpts.keyword_blocks) ::
       if (tt._catch === type || tt._for == type) ::
         // the following linting approach doesn't work for catch or for statements
       else ::
-        this.state.offsideNextOp = at_offside.keyword_lint
+        state.offsideNextOp = at_offside.keyword_lint
 
     return this._base_finishToken(type, val)
 
-  if (!isLookahead && tt_offside_keyword_with_block.has(type)) ::
+  if (isKeywordAllowed && tt_offside_keyword_with_block.has(type)) ::
     if (this.offsidePluginOpts.keyword_blocks) ::
       const lookahead = this.lookahead()
       if (tt.braceL !== lookahead.type && tt._if !== lookahead.type) ::
-          this.raise @ this.state.pos, `Keyword "${type.label}" should be followed by a code block. ('::' or '{}' or 'if')`
+          this.raise @ state.pos, `Keyword "${type.label}" should be followed by a code block. ('::' or '{}' or 'if')`
 
     return this._base_finishToken(type, val)
 
   if (type === tt.at || type === tt.doubleColon) ::
-    const pos0 = this.state.start, pos1 = this.state.pos + 2
+    const pos0 = state.start, pos1 = state.pos + 2
     const str_op = this.input.slice(pos0, pos1).split(/\s/, 1)[0]
 
     const op = at_offside[str_op]
     if (op) :: return this.finishOffsideOp(op)
 
   if (tt.eof === type) ::
-    if (this.state.offside.length) ::
+    if (state.offside.length) ::
       return this.popOffside()
 
   return this._base_finishToken(type, val)

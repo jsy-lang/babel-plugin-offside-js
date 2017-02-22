@@ -41,3 +41,9 @@ for let i=0; i<=n; i++ ::
 for (let i=0; i<=n; i++) ::
   5656
 
+;@
+  somePromise
+    .catch @ err => ::
+      999
+
+const ns = {catch: 1942}
