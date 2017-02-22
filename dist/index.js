@@ -73,8 +73,6 @@ let tt_offside = { '{': tt.braceL, '}': tt.braceR,
 
 let tt_offside_keyword_with_args = new Set([tt._if, tt._while, tt._for, tt._catch, tt._switch]);
 
-let tt_offside_keyword_with_block = new Set([tt._try, tt._finally, tt._else, tt._do]);
-
 let at_offside = { '::': { tokenPre: '{', tokenPost: '}', nestInner: false, codeBlock: true },
   '::@': { tokenPre: '(', tokenPost: ')', nestInner: false, extraChars: 1 },
   '::()': { tokenPre: '(', tokenPost: ')', nestInner: false, extraChars: 2 },
@@ -85,30 +83,7 @@ let at_offside = { '::': { tokenPre: '{', tokenPost: '}', nestInner: false, code
   '@{}': { tokenPre: '{', tokenPost: '}', nestInner: true, extraChars: 2 },
   '@[]': { tokenPre: '[', tokenPost: ']', nestInner: true, extraChars: 2 }
   // note:  no '@()' -- standardize to use single-char '@ ' instead
-  , keyword_args: { tokenPre: '(', tokenPost: ')', nestInner: false, inKeywordArg: true },
-  keyword_lint: { tokenPre: '(', tokenPost: ')', nestInner: false, inKeywordArg: true } };
-
-pp._base_parseParenExpression = baseProto.parseParenExpression;
-pp.parseParenExpression = function () {
-  try {
-    return this._base_parseParenExpression();
-  } catch (err) {
-    if (!this.offsidePluginOpts.keyword_blocks) {
-      throw err;
-    }
-
-    const stack = this.state.offside;
-    const stackTop = stack[stack.length - 1];
-    if (!stackTop || !stackTop.inKeywordArg) {
-      throw err;
-    }
-    if (!err.message.startsWith('Unexpected token, expected )')) {
-      throw err;
-    }
-
-    this.raise(stackTop.first.posLastContent, `Keyword with arguments should be followed by a code block. ('::' or '{}')`);
-  }
-};
+  , keyword_args: { tokenPre: '(', tokenPost: ')', nestInner: false, inKeywordArg: true } };
 
 pp._base_finishToken = baseProto.finishToken;
 pp.finishToken = function (type, val) {
@@ -129,23 +104,6 @@ pp.finishToken = function (type, val) {
       state.offsideNextOp = at_offside.keyword_args;
     } else if (lookahead.offsideRecentOp === at_offside['@']) {
       state.offsideNextOp = at_offside.keyword_args;
-    } else if (this.offsidePluginOpts.keyword_blocks) {
-      if (tt._catch === type || tt._for == type) {
-        // the following linting approach doesn't work for catch or for statements
-      } else {
-          state.offsideNextOp = at_offside.keyword_lint;
-        }
-    }
-
-    return this._base_finishToken(type, val);
-  }
-
-  if (isKeywordAllowed && tt_offside_keyword_with_block.has(type)) {
-    if (this.offsidePluginOpts.keyword_blocks) {
-      const lookahead = this.lookahead();
-      if (tt.braceL !== lookahead.type && tt._if !== lookahead.type) {
-        this.raise(state.pos, `Keyword "${type.label}" should be followed by a code block. ('::' or '{}' or 'if')`);
-      }
     }
 
     return this._base_finishToken(type, val);
@@ -297,15 +255,36 @@ function parseOffsideIndexMap(input) {
   return lines;
 }
 
+const keyword_block_parents = { IfStatement: 'if',
+  ForStatement: 'for',
+  WhileStatement: 'while',
+  DoWhileStatement: 'do-while' };
+const lint_keyword_block_parents = new Set(Object.keys(keyword_block_parents));
+
 const babel_plugin_id = `babel-plugin-offside--${Date.now()}`;
 module.exports = exports = babel => {
   return {
     name: babel_plugin_id,
-    manipulateOptions(opts, parserOpts) {
+    post(state) {
+      //console.dir @ state, @{} colors: true
+    }, manipulateOptions(opts, parserOpts) {
       parserOpts.plugins.push('decorators', 'functionBind');
       const offsidePluginOpts = opts.plugins.filter(plugin => plugin[0] && babel_plugin_id === plugin[0].key).map(plugin => plugin[1]).pop();
       parserOpts.offsidePluginOpts = offsidePluginOpts || default_offsidePluginOpts;
-    } };
+    }, visitor: {
+      ExpressionStatement(path) {
+        if (!this.opts.keyword_blocks) {
+          return;
+        }
+        if (!lint_keyword_block_parents.has(path.parent.type)) {
+          return;
+        }
+
+        let keyword = keyword_block_parents[path.parent.type];
+        if ('if' === keyword && path.node === path.parent.alternate) {
+          keyword = 'else'; // fixup if/else combined parent condition
+        }throw path.buildCodeFrameError(`Keyword '${keyword}' should be followed by a block statement using '::' or matching '{' / '}'. \n` + `    (From 'keyword_blocks' enforcement option of babel-plugin-offside)`);
+      } } };
 };
 
 Object.assign(exports, {

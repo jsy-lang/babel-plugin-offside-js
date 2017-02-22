@@ -4,7 +4,7 @@ const path = require('path')
 const babel = require('babel-core')
 
 const babel_opt =
-  { plugins: [path.resolve(__dirname, '../dist/')]
+  { plugins: [[path.resolve(__dirname, '../dist/'), {demo_options: 1942, keyword_blocks: true}]]
   , sourceMaps: 'inline' }
 
 Object.assign(exports,

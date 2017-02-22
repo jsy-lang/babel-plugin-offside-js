@@ -1,49 +1,50 @@
-if true ::
-  1
 
-if @ 42 ::
-  2
+if (expr) { blockStatement }
+else if (expr) { blockStatement }
+else { blockStatement }
 
-else ::
-  3
+if (expr) :: blockStatement
+else if (expr) :: blockStatement
+else :: blockStatement
 
-try ::
-  4
-finally ::
-  5
+if expr :: blockStatement
+else if expr :: blockStatement
+else :: blockStatement
 
-try ::
-  6
-catch (err) ::
-  7
 
-try ::
-  8
-catch err ::
-  9
 
-if isWorking ::
-  1942
+while (expr) { blockStatement }
 
-while true ::
-  2142
+while (expr) :: blockStatement
 
-do ::
-  2142
-while true
+while expr :: blockStatement
 
-for let k of iterable ::
-  4221
 
-for let i=0; i<=n; i++ ::
-  5656
+do { blockStatement }
+while (expr)
 
-for (let i=0; i<=n; i++) ::
-  5656
+do :: blockStatement
+while (expr)
 
-;@
-  somePromise
-    .catch @ err => ::
-      999
+do :: blockStatement
+while expr
 
-const ns = {catch: 1942}
+
+switch (expr) {default: blockStatement}
+
+switch expr :: default: blockStatement
+
+
+
+try { tryblock }
+catch (expr) { blockStatement }
+
+try :: tryblock
+catch (expr) { blockStatement }
+
+try :: tryblock
+catch (expr) :: blockStatement
+
+try :: tryblock
+catch expr :: blockStatement
+
