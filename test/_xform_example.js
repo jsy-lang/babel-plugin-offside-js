@@ -4,38 +4,44 @@ const path = require('path')
 const babel = require('babel-core')
 
 const babel_opt =
-  { plugins: [[path.resolve(__dirname, '../dist/'), {demo_options: 1942, keyword_blocks: true}]]
-  , sourceMaps: 'inline' }
+  @{} plugins: [[path.resolve(__dirname, '../dist/'), {demo_options: 1942, keyword_blocks: true}]]
+    , babelrc: false
+    , highlightCode: false
+    , sourceMaps: 'inline'
 
-Object.assign(exports,
-    { babel_opt
+Object.assign @ exports,
+  @{} babel_opt
     , transformExampleCode
-    , showFormattedOutput })
+    , showTransformedCode
+    , showFormattedOutput
 
-function transformExampleCode(filename, show=null) {
+function transformExampleCode(filename, show=null) ::
   filename = path.resolve(__dirname, filename)
-  if (show && 'function' !== typeof show)
-    show = showFormattedOutput
+  if (show && 'function' !== typeof show) ::
+    show = showTransformedCode
 
-  return new Promise((resolve, reject) => (
-      fs.readFile(filename, 'utf-8', (err, original) => {
-        if (err) return reject(err)
+  return new Promise 
+    @ (resolve, reject) => ::
+      fs.readFile @ filename, 'utf-8', (err, original) => ::
+        if (err) :: return reject(err)
 
-        try {
+        try ::
           let res = babel.transform(original, babel_opt)
-          if (show) show('Original', original)
-          if (show) show('Transformed', res.code)
+          if (show) show @ original, res.code
           resolve(res.code)
 
-        } catch (err) {
+        catch (err) ::
           reject(err)
-        }
-      })))
       
-    .catch(err => (console.error(err), Promise.reject(err))) }
+    .catch @ err => ::()
+      console.error(err), Promise.reject(err)
 
 
-function showFormattedOutput(label, code) {
+function showTransformedCode(original, transformed) ::
+  show @ 'Original', original
+  show @ 'Transformed', transformed
+
+function showFormattedOutput(label, code) ::
   console.log()
   console.log(`#### ${label}:`)
   console.log()
@@ -43,4 +49,3 @@ function showFormattedOutput(label, code) {
   console.log(code)
   console.log('```')
   console.log()
-}

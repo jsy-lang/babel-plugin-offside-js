@@ -13,6 +13,11 @@ const outer = () => ::
   else :: blockStatement
 
 
+  if fn_expr @ arg_a, arg_b ::
+    blockStatement
+  else if fn_expr @ arg_a, arg_b :: blockStatement
+  else :: blockStatement
+
   for (let i=0; i<n; i++) { blockStatement }
   for (let i=0; i<n; i++) :: blockStatement
   for let i=0; i<n; i++ :: blockStatement

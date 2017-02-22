@@ -1,4 +1,4 @@
-'use strict'
+require('source-map-support').install()
 
 //
 //
@@ -14,7 +14,7 @@
 //
 //
 
-import tap from 'tap-lite-tester'
+const tap = require('tap-lite-tester')
 
 tap.start()
 

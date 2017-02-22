@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-offside-js",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Babel offside (indention) Javascript syntax extension",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
   "license": "BSD-2-Clause",
@@ -27,17 +27,29 @@
     "tap-lite-tester": "^0.3.9"
   },
   "babel": {
-    "plugins": [
-      "./dist/stable"
-    ]
+    "env": {
+      "stable": {
+        "plugins": [
+          "./dist/stable"
+        ]
+      },
+      "development": {
+        "plugins": [
+          "./dist"
+        ]
+      }
+    }
   },
   "scripts": {
     "watch": "npm -s run build -- --watch",
-    "build": "babel --source-maps true code -d dist",
-    "build-examples": "babel --source-maps true test/ex* -d tmp",
-    "predebug": "npm -s run build",
-    "debug": "OFFSIDE_DEBUG=true node test/testSimple.js",
-    "pretest": "npm -s run build",
-    "test": "node test/testSimple.js"
+    "build": "BABEL_ENV=stable babel -s inline code -d dist",
+    "build-stable": "BABEL_ENV=stable babel -s inline code -d dist/stable",
+    "build-tests": "babel -s inline test -d dist-test",
+    "build-examples": "babel -s inline test-data -d dist-test-data",
+    "prepublish": "npm -s run build-stable && npm -s run test",
+    "predebug": "npm -s run build && npm -s run build-tests",
+    "debug": "OFFSIDE_DEBUG=true node dist-test/testSimple.js",
+    "pretest": "npm -s run build && npm -s run build-tests",
+    "test": "node dist-test/all.js dist-test/test*.js"
   }
 }
