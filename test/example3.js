@@ -1,10 +1,14 @@
-console.log @ 'the beginning'
-console.log @ 'the second beginning'
+if true ::
+  1
 
-if (true) ::
-  console.log @ 'true!'
+if @ 42 ::
+  2
+
 else ::
-  console.log @ 'false!'
+  3
 
-console.log @ 'the end'
+try ::
+  4
 
+finally ::
+  5

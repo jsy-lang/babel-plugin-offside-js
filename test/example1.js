@@ -5,7 +5,7 @@ function outer(mind) ::
     'you', 'do?'
 
 
-  if (mind < 'blown') ::
+  if mind < 'blown' ::
     return false
   else ::
     console.log @ 
