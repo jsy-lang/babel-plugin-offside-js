@@ -28,7 +28,7 @@ function transformExampleCode(filename, show=null) ::
 
         try ::
           const res = babel.transform(source, babel_opt)
-          if (show) show @ source, res.code
+          if (show) :: show @ source, res.code
           resolve(res.code)
 
         catch (err) ::

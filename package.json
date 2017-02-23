@@ -43,6 +43,7 @@
   "scripts": {
     "watch": "npm -s run build -- --watch",
     "build": "BABEL_ENV=stable babel -s inline code -d dist",
+    "prebuild-stable": "npm -s run build",
     "build-stable": "BABEL_ENV=stable babel -s inline code -d dist/stable",
     "build-tests": "babel -s inline test -d dist-test",
     "build-examples": "babel -s inline test-data -d dist-test-data",

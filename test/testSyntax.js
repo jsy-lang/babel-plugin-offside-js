@@ -128,7 +128,7 @@ tap.test @ 'Else works with parens',
     else if (y) ::
       out = y
 
-    else
+    else ::
       out = ''
     
     t.equal @ out, y
@@ -143,7 +143,7 @@ tap.test @ 'Else works without parens',
     else if y ::
       out = y
 
-    else
+    else ::
       out = ''
     
     t.equal @ out, y
