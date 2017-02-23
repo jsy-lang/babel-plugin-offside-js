@@ -62,9 +62,6 @@ const standardTransforms = ::
   , inArrowFn: bindIterableTransform @ 'vanilla arrow function', 'const outer_arrow = () => {', '}'
   , inOffsideArrowFn: bindIterableTransform @ 'offside arrow function', 'const outer_arrow = () => ::'
 
-const inOffsideArrowFunctionTransform = bindIterableTransform @
-  'function outer() ::'
-
 Object.assign @ exports,
   @{} babel_opt
     , genSyntaxTestCases
