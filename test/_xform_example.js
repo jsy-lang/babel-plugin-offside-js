@@ -1,13 +1,14 @@
-'use strict'
 const fs = require('fs')
 const path = require('path')
 const babel = require('babel-core')
 
 const babel_opt =
-  @{} plugins: [[path.resolve(__dirname, '../dist/'), {demo_options: 1942, keyword_blocks: true}]]
-    , babelrc: false
+  @{} babelrc: false
     , highlightCode: false
     , sourceMaps: 'inline'
+    , plugins: @[]
+        @[] path.resolve(__dirname, '../dist/')
+          , @{} demo_options: 1942, keyword_blocks: true
 
 Object.assign @ exports,
   @{} babel_opt
@@ -22,12 +23,12 @@ function transformExampleCode(filename, show=null) ::
 
   return new Promise 
     @ (resolve, reject) => ::
-      fs.readFile @ filename, 'utf-8', (err, original) => ::
+      fs.readFile @ filename, 'utf-8', (err, source) => ::
         if (err) :: return reject(err)
 
         try ::
-          let res = babel.transform(original, babel_opt)
-          if (show) show @ original, res.code
+          const res = babel.transform(source, babel_opt)
+          if (show) show @ source, res.code
           resolve(res.code)
 
         catch (err) ::
@@ -37,8 +38,8 @@ function transformExampleCode(filename, show=null) ::
       console.error(err), Promise.reject(err)
 
 
-function showTransformedCode(original, transformed) ::
-  show @ 'Original', original
+function showTransformedCode(source, transformed) ::
+  show @ 'Original', source
   show @ 'Transformed', transformed
 
 function showFormattedOutput(label, code) ::

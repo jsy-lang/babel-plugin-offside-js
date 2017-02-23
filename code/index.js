@@ -1,5 +1,3 @@
-'use strict'
-const assert = require('assert')
 const babylon = require('babylon')
 const tt = babylon.tokTypes
 
@@ -63,11 +61,6 @@ pp.initOffside = function() ::
           this._pos = pos
 
 
-let tt_offside =
-  @{} '{': tt.braceL,   '}': tt.braceR
-    , '(': tt.parenL,   ')': tt.parenR
-    , '[': tt.bracketL, ']': tt.bracketR
-
 let tt_offside_keyword_with_args = new Set @
   @[] tt._if, tt._while, tt._for
     , tt._catch, tt._switch
@@ -76,17 +69,17 @@ let tt_offside_keyword_lookahead_skip = new Set @
   @[] tt.parenL, tt.colon, tt.comma, tt.dot
 
 let at_offside =
-  @{} '::':   {tokenPre: '{', tokenPost: '}', nestInner: false, codeBlock: true}
-    , '::@':  {tokenPre: '(', tokenPost: ')', nestInner: false, extraChars: 1}
-    , '::()': {tokenPre: '(', tokenPost: ')', nestInner: false, extraChars: 2}
-    , '::{}': {tokenPre: '{', tokenPost: '}', nestInner: false, extraChars: 2}
-    , '::[]': {tokenPre: '[', tokenPost: ']', nestInner: false, extraChars: 2}
-    , '@':    {tokenPre: '(', tokenPost: ')', nestInner: true}
-    , '@()':  {tokenPre: '{', tokenPost: '}', nestInner: true, extraChars: 2}
-    , '@{}':  {tokenPre: '{', tokenPost: '}', nestInner: true, extraChars: 2}
-    , '@[]':  {tokenPre: '[', tokenPost: ']', nestInner: true, extraChars: 2}
+  @{} '::':   {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, codeBlock: true}
+    , '::@':  {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 1}
+    , '::()': {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 2}
+    , '::{}': {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2}
+    , '::[]': {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2}
+    , '@':    {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true}
+    , '@()':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
+    , '@{}':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
+    , '@[]':  {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2}
     // note:  no '@()' -- standardize to use single-char '@ ' instead
-    , keyword_args: {tokenPre: '(', tokenPost: ')', nestInner: false, inKeywordArg: true}
+    , keyword_args: {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true}
 
 pp._base_finishToken = baseProto.finishToken
 pp.finishToken = function(type, val) ::
@@ -132,7 +125,8 @@ pp.offsideBlock = function (op, stackTop) ::
   const nestInner = op.nestInner && stackTop && line0 === stackTop.first.line
   const indent = nestInner ? stackTop.innerIndent : first.indent
   let line = 1+line0, last = first
-  let innerIndent = offside_lines[line].indent
+  const innerLine = offside_lines[line]
+  let innerIndent = innerLine ? innerLine.indent : ''
 
   while (line < offside_lines.length) ::
     let cur = offside_lines[line]
@@ -162,7 +156,7 @@ pp.finishOffsideOp = function (op) ::
   if (op.extraChars) ::
     this.state.pos += op.extraChars
 
-  this._base_finishToken(tt_offside[op.tokenPre])
+  this._base_finishToken(op.tokenPre)
 
   if (this.isLookahead) :: return
 
@@ -210,9 +204,7 @@ pp.popOffside = function() ::
     : stack.pop()
   this.state.offsidePos = -1
 
-  const op = stackTop.op
-  const tt_post = tt_offside[op.tokenPost]
-  this._base_finishToken(tt_post)
+  this._base_finishToken(stackTop.op.tokenPost)
   return stackTop
 
 
