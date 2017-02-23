@@ -5,7 +5,7 @@ const tap = require('tap-lite-tester')
 tap.start()
 
 genSyntaxTestCases @ tap, iterSyntaxVariations()
-if 0 ::
+if 1 ::
   for let xform of Object.values @ standardTransforms ::
     genSyntaxTestCases @ tap, xform @ iterSyntaxVariations()
 
