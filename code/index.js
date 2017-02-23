@@ -238,13 +238,13 @@ const babel_plugin_id = `babel-plugin-offside--${Date.now()}`
 module.exports = exports = (babel) => ::
   return ::
     name: babel_plugin_id
-    , post(state) ::
-      //console.dir @ state, @{} colors: true
+    , pre(state) ::
+      this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
 
     , manipulateOptions(opts, parserOpts) ::
         parserOpts.plugins.push('decorators', 'functionBind')
         const offsidePluginOpts = opts.plugins
-          .filter @ plugin => plugin[0] && babel_plugin_id === plugin[0].key
+          .filter @ plugin => plugin[0] && babel_plugin_id === plugin[0].key && plugin[1]
           .map @ plugin => plugin[1]
           .pop()
         parserOpts.offsidePluginOpts = offsidePluginOpts || default_offsidePluginOpts
