@@ -32,7 +32,7 @@ function * iterSyntaxVariations() ::
   yield :: expectValid: true
     , title: 'keyword @ offside switch statement'
     , source: @[] 'switch @ expr :: case a: default: break'
-    , tokens: @[] 'switch', '(', '(', 'name', ')', ')', '{', 'case', 'name', ':', 'default', ':', 'break', '}', 'eof'
+    , tokens: @[] 'switch', '(', 'name', ')', '{', 'case', 'name', ':', 'default', ':', 'break', '}', 'eof'
 
   yield :: expectValid: true
     , title: 'keyword offside switch statement with call'

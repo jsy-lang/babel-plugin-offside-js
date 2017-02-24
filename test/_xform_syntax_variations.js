@@ -11,7 +11,10 @@ const babel_opt =
 
 function testSyntaxError(t, testCase) ::
   const block = () => ::
-    babel.transform(testCase.source.join('\n'), babel_opt)
+    let res = babel.transform(testCase.source.join('\n'), babel_opt)
+
+    if (testCase.debug) ::
+      console.dir @ res.ast, @{} colors: true, depth: null
 
   t.throws @ block, SyntaxError
 
@@ -28,6 +31,9 @@ function testSourceTransform(t, testCase) ::
       .map @ token => token.type.label
     t.deepEqual @ tokens, testCase.tokens
 
+  if (testCase.debug) ::
+    console.dir @ res.ast, @{} colors: true, depth: null
+
 
 function genSyntaxTestCases(tap, iterable_test_cases) ::
   for (const testCase of iterable_test_cases) ::
@@ -43,14 +49,16 @@ function genSyntaxTestCases(tap, iterable_test_cases) ::
     else ::
       tap.test @ title, testFn
 
-function bindIterableTransform(title_suffix, prefix, postfix) ::
+function bindIterableTransform(title_suffix, prefix, postfix, indent=2) ::
+  indent = ' '.repeat @ indent
   return function * (iterable_test_cases) ::
     for (let testCase of iterable_test_cases) ::
       const title = `${testCase.title} WITHIN ${title_suffix}`
       const source = [].concat @
-        [prefix || ''],
-        testCase.source,
-        [postfix || '']
+          [prefix || '']
+        , testCase.source.map @ line => indent + line
+        , ['']
+        , [postfix || '']
 
       yield Object.assign @ {}, testCase, @{} title, source, tokens: null
 
@@ -61,6 +69,19 @@ const standardTransforms = ::
   , inOffsideFn: bindIterableTransform @ 'offside function', 'function outer() ::'
   , inArrowFn: bindIterableTransform @ 'vanilla arrow function', 'const outer_arrow = () => {', '}'
   , inOffsideArrowFn: bindIterableTransform @ 'offside arrow function', 'const outer_arrow = () => ::'
+  , inIfBlock: bindIterableTransform @ 'keyword offside if block', 'if expr_0 ::'
+  , inWhileBlock: bindIterableTransform @ 'keyword offside while block', 'while expr_0 ::'
+  , inSwitchBlock: bindIterableTransform @ 'keyword offside switch block', 'switch expr_0 ::\n  case a: default:', '', 4
+
+  , inFinallyBlock: bindIterableTransform @ 'offside finally block', 'try ::\nfinally ::'
+  , inTryFinallyBlock: bindIterableTransform @ 'offside try/finally block', 'try ::', 'finally ::'
+  , inCatchBlock: bindIterableTransform @ 'keyword offside try/finally block', 'try ::\ncatch err ::'
+  , inTryCatchBlock: bindIterableTransform @ 'offside try/catch block', 'try ::', 'catch (err) ::'
+
+  // TODO: Investigate while the following causes errors
+  //, inTryCatchBlock_v2: bindIterableTransform @ 'keyword offside try/catch block', 'try ::', 'catch err ::'
+
+const extendedTransforms = ::
 
 Object.assign @ exports,
   @{} babel_opt

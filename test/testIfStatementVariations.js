@@ -77,19 +77,19 @@ function * iterCompoundExpressions() ::
   yield :: expectValid: true
     , title: 'offside compound if @ expression'
     , source: @[] 'if @ test @ a, b, c :: blockStatement'
-    , tokens: @[] "if", "(", "(", "name", "(", "name", ",", "name", ",", "name", ")", ")", ")", "{", "name", "}", "eof"
+    , tokens: @[] "if", "(", "name", "(", "name", ",", "name", ",", "name", ")", ")", "{", "name", "}", "eof"
 
   yield :: expectValid: true
     , title: 'offside compound if @ expression, multiline'
     , source: @[] 'if @ test @ a, b, c ::'
                 , '  blockStatement'
-    , tokens: @[] "if", "(", "(", "name", "(", "name", ",", "name", ",", "name", ")", ")", ")", "{", "name", "}", "eof"
+    , tokens: @[] "if", "(", "name", "(", "name", ",", "name", ",", "name", ")", ")", "{", "name", "}", "eof"
 
   yield :: expectValid: true
     , title: 'offside dual compound if @ expression'
     , source: @[] 'if @ other && test @ a, b, c ::'
                 , '  blockStatement'
-    , tokens: @[] "if", "(", "(", "name", "&&", "name", "(", "name", ",", "name", ",", "name", ")", ")", ")", "{", "name", "}", "eof"
+    , tokens: @[] "if", "(", "name", "&&", "name", "(", "name", ",", "name", ",", "name", ")", ")", "{", "name", "}", "eof"
 
 
 
@@ -174,18 +174,18 @@ function * iterExtendedIfElseIfElseStmts() ::
     , source: @[] 'if @ expr :: blockStatement'
                 , 'else if @ expr :: blockStatement'
                 , 'else :: blockStatement'
-    , tokens: @[] 'if', '(', '(', 'name', ')', ')', '{', 'name', '}', 'else', 'if', '(', '(', 'name', ')', ')', '{', 'name', '}', 'else', '{', 'name', '}', 'eof'
+    , tokens: @[] 'if', '(', 'name', ')', '{', 'name', '}', 'else', 'if', '(', 'name', ')', '{', 'name', '}', 'else', '{', 'name', '}', 'eof'
 
   yield :: expectValid: true
     , title: 'mixed variant 4 keyword offside if / else if / else statement'
     , source: @[] 'if @ expr :: blockStatement'
                 , 'else if expr :: blockStatement'
                 , 'else :: blockStatement'
-    , tokens: @[] 'if', '(', '(', 'name', ')', ')', '{', 'name', '}', 'else', 'if', '(', 'name', ')', '{', 'name', '}', 'else', '{', 'name', '}', 'eof'
+    , tokens: @[] 'if', '(', 'name', ')', '{', 'name', '}', 'else', 'if', '(', 'name', ')', '{', 'name', '}', 'else', '{', 'name', '}', 'eof'
 
   yield :: expectValid: true
     , title: 'mixed variant 5 keyword offside if / else if / else statement'
     , source: @[] 'if @ expr :: blockStatement'
                 , 'else if (expr) :: blockStatement'
                 , 'else :: blockStatement'
-    , tokens: @[] 'if', '(', '(', 'name', ')', ')', '{', 'name', '}', 'else', 'if', '(', 'name', ')', '{', 'name', '}', 'else', '{', 'name', '}', 'eof'
+    , tokens: @[] 'if', '(', 'name', ')', '{', 'name', '}', 'else', 'if', '(', 'name', ')', '{', 'name', '}', 'else', '{', 'name', '}', 'eof'

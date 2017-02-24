@@ -74,7 +74,7 @@ let at_offside =
     , '::()': {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 2}
     , '::{}': {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2}
     , '::[]': {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2}
-    , '@':    {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true}
+    , '@':    {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true}
     , '@()':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
     , '@{}':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
     , '@[]':  {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2}
@@ -84,12 +84,12 @@ let at_offside =
 pp._base_finishToken = baseProto.finishToken
 pp.finishToken = function(type, val) ::
   const state = this.state
-  state.offsideRecentOp = null
 
   if (tt_offside_keyword_with_args.has(type)) ::
     let isKeywordAllowed = !this.isLookahead
       && tt.dot !== state.type
 
+    state.offsideRecentKeyword = isKeywordAllowed
     if (!isKeywordAllowed) ::
       return this._base_finishToken(type, val)
 
@@ -97,16 +97,18 @@ pp.finishToken = function(type, val) ::
 
     if (!tt_offside_keyword_lookahead_skip.has(lookahead.type)) ::
       state.offsideNextOp = at_offside.keyword_args
-    else if (lookahead.offsideRecentOp === at_offside['@']) ::
-      state.offsideNextOp = at_offside.keyword_args
 
     return this._base_finishToken(type, val)
 
+  const recentKeyword = state.offsideRecentKeyword
+  state.offsideRecentKeyword = null
   if (type === tt.at || type === tt.doubleColon) ::
     const pos0 = state.start, pos1 = state.pos + 2
     const str_op = this.input.slice(pos0, pos1).split(/\s/, 1)[0]
 
-    const op = at_offside[str_op]
+    let op = at_offside[str_op]
+    if (op.keywordBlock && recentKeyword && tt_offside_keyword_with_args.has(state.type)) ::
+      op = at_offside.keyword_args
     if (op) :: return this.finishOffsideOp(op)
 
   if (tt.eof === type) ::
@@ -145,7 +147,6 @@ pp.offsideBlock = function (op, stackTop) ::
 
 
 pp.finishOffsideOp = function (op) ::
-  this.state.offsideRecentOp = op
   const stack = this.state.offside
   let stackTop = stack[stack.length - 1]
   if (stackTop && stackTop.inKeywordArg && op.codeBlock) ::
@@ -230,6 +231,7 @@ function parseOffsideIndexMap(input) ::
 const keyword_block_parents =
  @{} IfStatement: 'if'
    , ForStatement: 'for'
+   , ForOfStatement: 'for'
    , WhileStatement: 'while'
    , DoWhileStatement: 'do-while'
 const lint_keyword_block_parents = new Set @ Object.keys @ keyword_block_parents

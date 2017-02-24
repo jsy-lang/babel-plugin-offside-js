@@ -5,7 +5,7 @@ const tap = require('tap-lite-tester')
 tap.start()
 
 genSyntaxTestCases @ tap, iterSyntaxVariations()
-if 0 ::
+if 1 ::
   for let xform of Object.values @ standardTransforms ::
     genSyntaxTestCases @ tap, xform @ iterSyntaxVariations()
 
@@ -52,5 +52,13 @@ function * iterTryCatch() ::
     , source: @[] 'try ::'
                 , '  blockStatement'
                 , 'catch err ::'
+                , '  blockStatement'
+    , tokens: @[] 'try', '{', 'name', '}', 'catch', '(', 'name', ')', '{', 'name', '}', 'eof'
+
+  yield :: expectValid: true
+    , title: 'keyword @ offside try/catch statement'
+    , source: @[] 'try ::'
+                , '  blockStatement'
+                , 'catch @ err ::'
                 , '  blockStatement'
     , tokens: @[] 'try', '{', 'name', '}', 'catch', '(', 'name', ')', '{', 'name', '}', 'eof'
