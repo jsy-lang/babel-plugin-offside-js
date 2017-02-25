@@ -13,7 +13,9 @@ function testSyntaxError(t, testCase) ::
   const block = () => ::
     let res = babel.transform(testCase.source.join('\n'), babel_opt)
 
-    if (testCase.debug) ::
+    if ('code' === testCase.debug) ::
+      console.dir @ res.code.split('\n'), @{} colors: true, depth: null
+    if ('ast' === testCase.debug) ::
       console.dir @ res.ast, @{} colors: true, depth: null
 
   t.throws @ block, SyntaxError
@@ -26,13 +28,17 @@ function testSourceTransform(t, testCase) ::
     console.error @ err
     t.fail @ err.message
 
+  if ('code' === testCase.debug) ::
+    console.dir @ res.code.split('\n'), @{} colors: true, depth: null
+  if ('ast' === testCase.debug) ::
+    console.dir @ res.ast, @{} colors: true, depth: null
+
   if (testCase.tokens) ::
     const tokens = res.ast.tokens
       .map @ token => token.type.label
+    if ('tokens' === testCase.debug) ::
+      console.log @ tokens
     t.deepEqual @ tokens, testCase.tokens
-
-  if (testCase.debug) ::
-    console.dir @ res.ast, @{} colors: true, depth: null
 
 
 function genSyntaxTestCases(tap, iterable_test_cases) ::
@@ -46,6 +52,8 @@ function genSyntaxTestCases(tap, iterable_test_cases) ::
 
     if (testCase.only) ::
       tap.only @ title, testFn
+    else if (testCase.todo) ::
+      tap.todo @ title, testFn
     else ::
       tap.test @ title, testFn
 

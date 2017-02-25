@@ -119,13 +119,14 @@ pp.finishToken = function(type, val) ::
 
 
 
-pp.offsideBlock = function (op, stackTop) ::
+pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
   let offside_lines = this.offside_lines
 
   const line0 = this.state.curLine
   const first = offside_lines[line0]
   const nestInner = op.nestInner && stackTop && line0 === stackTop.first.line
-  const indent = nestInner ? stackTop.innerIndent : first.indent
+  const indent = recentKeywordTop ? recentKeywordTop.first.indent
+    : nestInner ? stackTop.innerIndent : first.indent
   let line = 1+line0, last = first
   const innerLine = offside_lines[line]
   let innerIndent = innerLine ? innerLine.indent : ''
@@ -143,16 +144,23 @@ pp.offsideBlock = function (op, stackTop) ::
   innerIndent = first.indent > innerIndent
     ? first.indent : innerIndent
 
-  return {op, innerIndent, first, last, nestInner}
+  return {op, innerIndent, first, last, nestInner, recentKeywordTop}
+
 
 
 pp.finishOffsideOp = function (op) ::
   const stack = this.state.offside
   let stackTop = stack[stack.length - 1]
-  if (stackTop && stackTop.inKeywordArg && op.codeBlock) ::
-    this.popOffside()
-    this.state.offsideNextOp = op
-    return
+  let recentKeywordTop
+  if (op.codeBlock) ::
+    if (stackTop && stackTop.inKeywordArg) ::
+      this.popOffside()
+      this.state.offsideNextOp = op
+      this.state.offsideRecentTop = stackTop
+      return
+
+    recentKeywordTop = this.state.offsideRecentTop
+    this.state.offsideRecentTop = null
 
   if (op.extraChars) ::
     this.state.pos += op.extraChars
@@ -162,7 +170,7 @@ pp.finishOffsideOp = function (op) ::
   if (this.isLookahead) :: return
 
   stackTop = stack[stack.length - 1]
-  let blk = this.offsideBlock(op, stackTop)
+  let blk = this.offsideBlock(op, stackTop, recentKeywordTop)
   blk.inKeywordArg = op.inKeywordArg || stackTop && stackTop.inKeywordArg
   this.state.offside.push(blk)
 

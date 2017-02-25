@@ -16,6 +16,7 @@ function * iterSyntaxVariations() ::
   yield * iterForStepSyntaxErrors()
   yield * iterForStepStatements()
 
+
 function * iterForStepSyntaxErrors() ::
   yield :: expectSyntaxError: true
     , title: 'linted for/step statement with expression'
@@ -68,12 +69,3 @@ function * iterForStepStatements() ::
     , source: @[] 'for let i=0; i<n; i++ :: blockStatement'
     , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
 
-  // TODO: improve syntax support for following case
-  yield :: expectValid: true
-    , title: 'keyword offside for/step let statement, extended multiline'
-    , source: @[] 'for let i = fn_init @ a, b'
-              , '    ; fn_test @ i, n'
-              , '    ; i++'
-              , '    ::'
-              , '      blockStatement'
-    , tokens: @[] 'for', '(', 'let', 'name', '=', 'name', '(', 'name', ',', 'name', ')', ';', 'name', '(', 'name', ',', 'name', ')', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
