@@ -118,33 +118,56 @@ pp.finishToken = function(type, val) ::
   return this._base_finishToken(type, val)
 
 
+pp.offsideIndent = function (line0, outerIndent, innerIndent) ::
+  const offside_lines = this.offside_lines
 
-pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
-  let offside_lines = this.offside_lines
+  if (null == innerIndent) ::
+    const innerLine = offside_lines[line0+1]
+    innerIndent = innerLine ? innerLine.indent : ''
 
-  const line0 = this.state.curLine
-  const first = offside_lines[line0]
-  const nestInner = op.nestInner && stackTop && line0 === stackTop.first.line
-  const indent = recentKeywordTop ? recentKeywordTop.first.indent
-    : nestInner ? stackTop.innerIndent : first.indent
-  let line = 1+line0, last = first
-  const innerLine = offside_lines[line]
-  let innerIndent = innerLine ? innerLine.indent : ''
-
+  let line=line0+1, last=offside_lines[line0]
   while (line < offside_lines.length) ::
-    let cur = offside_lines[line]
-    if (cur.content && indent >= cur.indent) ::
+    const cur = offside_lines[line]
+    if (cur.content && outerIndent >= cur.indent) ::
+      line-- // backup to previous line
       break
 
     line++; last = cur
     if (innerIndent > cur.indent) ::
       innerIndent = cur.indent
 
+  return @{} line, last, innerIndent
+
+
+pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
+  let offside_lines = this.offside_lines
+
+  const line0 = this.state.curLine
+  const first = offside_lines[line0]
+
+  let indent, keywordNestedIndent
+  if (recentKeywordTop) ::
+    indent = recentKeywordTop.first.indent
+  else if (op.nestInner && stackTop && line0 === stackTop.first.line) ::
+    indent = stackTop.innerIndent
+  else if (op.inKeywordArg) ::
+    indent = first.indent
+    const indent_block = this.offsideIndent(line0, indent)
+    const indent_keyword = this.offsideIndent(line0, indent_block.innerIndent)
+    if (indent_keyword.innerIndent > indent_block.innerIndent) ::
+      // autodetect keyword argument using '@' for function calls
+      indent = indent_block.innerIndent
+      keywordNestedIndent = indent_keyword.innerIndent
+  else ::
+    indent = first.indent
+
+  let {last, innerIndent} = this.offsideIndent(line0, indent, keywordNestedIndent)
+
   // cap to 
   innerIndent = first.indent > innerIndent
     ? first.indent : innerIndent
 
-  return {op, innerIndent, first, last, nestInner, recentKeywordTop}
+  return {op, innerIndent, first, last}
 
 
 

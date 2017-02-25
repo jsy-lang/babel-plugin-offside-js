@@ -11,6 +11,9 @@ const babel_opt =
 
 function testSyntaxError(t, testCase) ::
   const block = () => ::
+    if (testCase.debug) ::
+      console.dir @ testCase.source, @{} colors: true, depth: null
+
     let res = babel.transform(testCase.source.join('\n'), babel_opt)
 
     if ('code' === testCase.debug) ::
@@ -23,6 +26,9 @@ function testSyntaxError(t, testCase) ::
 function testSourceTransform(t, testCase) ::
   let res
   try ::
+    if (testCase.debug) ::
+      console.dir @ testCase.source, @{} colors: true, depth: null
+
     res = babel.transform(testCase.source.join('\n'), babel_opt)
   catch (err) ::
     console.error @ err
