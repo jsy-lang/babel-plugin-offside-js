@@ -201,4 +201,17 @@ tap.test @ 'do while works with parens',
 
     t.equal @ tarr.length, 9
 
+tap.test @ 'ternary with @ function application',
+  t => ::
+    let cap = item => item.toUpperCase()
+    let y = true
+
+    let x = y
+      ? cap @ 'a' 
+      : 'a'
+
+    let g = y ? cap('a') : 'a'
+    
+    t.equal @ x, g
+
 tap.finish()
