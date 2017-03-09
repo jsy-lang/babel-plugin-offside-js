@@ -81,38 +81,47 @@ let at_offside =
     // note:  no '@()' -- standardize to use single-char '@ ' instead
     , keyword_args: {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true}
 
+
+pp.isForAwait = function (keywordType, type, val) ::
+  return tt._for === keywordType
+    && tt.name === type
+    && 'await' === val
+
 pp._base_finishToken = baseProto.finishToken
 pp.finishToken = function(type, val) ::
   const state = this.state
+  const recentKeyword = state.offsideRecentKeyword
+  let inForAwait = recentKeyword ? this.isForAwait(recentKeyword, type, val) : null
+  state.offsideRecentKeyword = null
 
-  if (tt_offside_keyword_with_args.has(type)) ::
+  if tt_offside_keyword_with_args.has(type) || inForAwait ::
     let isKeywordAllowed = !this.isLookahead
       && tt.dot !== state.type
 
-    state.offsideRecentKeyword = isKeywordAllowed
-    if (!isKeywordAllowed) ::
+    if !isKeywordAllowed ::
       return this._base_finishToken(type, val)
 
+    state.offsideRecentKeyword = inForAwait ? tt._for : type
     const lookahead = this.lookahead()
 
-    if (!tt_offside_keyword_lookahead_skip.has(lookahead.type)) ::
+    if tt_offside_keyword_lookahead_skip.has(lookahead.type) ::
+    else if this.isForAwait(type, lookahead.type, lookahead.value) ::
+    else ::
       state.offsideNextOp = at_offside.keyword_args
 
     return this._base_finishToken(type, val)
 
-  const recentKeyword = state.offsideRecentKeyword
-  state.offsideRecentKeyword = null
-  if (type === tt.at || type === tt.doubleColon) ::
+  if type === tt.at || type === tt.doubleColon ::
     const pos0 = state.start, pos1 = state.pos + 2
     const str_op = this.input.slice(pos0, pos1).split(/\s/, 1)[0]
 
     let op = at_offside[str_op]
-    if (op.keywordBlock && recentKeyword && tt_offside_keyword_with_args.has(state.type)) ::
+    if op.keywordBlock && recentKeyword && tt_offside_keyword_with_args.has(recentKeyword) ::
       op = at_offside.keyword_args
-    if (op) :: return this.finishOffsideOp(op)
+    if op :: return this.finishOffsideOp(op)
 
-  if (tt.eof === type) ::
-    if (state.offside.length) ::
+  if tt.eof === type ::
+    if state.offside.length ::
       return this.popOffside()
 
   return this._base_finishToken(type, val)
@@ -263,6 +272,7 @@ const keyword_block_parents =
  @{} IfStatement: 'if'
    , ForStatement: 'for'
    , ForOfStatement: 'for'
+   , ForAwaitStatement: 'for-await'
    , WhileStatement: 'while'
    , DoWhileStatement: 'do-while'
 const lint_keyword_block_parents = new Set @ Object.keys @ keyword_block_parents
@@ -272,10 +282,10 @@ module.exports = exports = (babel) => ::
   return ::
     name: babel_plugin_id
     , pre(state) ::
-      this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
+        this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
 
     , manipulateOptions(opts, parserOpts) ::
-        parserOpts.plugins.push('decorators', 'functionBind')
+        parserOpts.plugins.push('asyncGenerators', 'classProperties', 'decorators', 'functionBind')
         const offsidePluginOpts = opts.plugins
           .filter @ plugin => plugin[0] && babel_plugin_id === plugin[0].key && plugin[1]
           .map @ plugin => plugin[1]
