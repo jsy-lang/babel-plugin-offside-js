@@ -12,7 +12,7 @@ function outer(mind) ::
     'you', 'do?'
 
 
-  if (mind < 'blown') ::
+  if mind < 'blown' ::
     return false
   else ::
     console.log @ 
@@ -24,9 +24,9 @@ function outer(mind) ::
 
   fs.readFile @ `${__dirname}/example1.js`, 'utf-8', (err, data) => ::
     try ::
-      console.log(data)
-    catch (err) ::
-      console.error(err)
+      console.log @ data
+    catch err ::
+      console.error @ err
 ```
 
 
