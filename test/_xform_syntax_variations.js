@@ -120,12 +120,12 @@ const blockTransforms = ::
   , inCatchBlock: bindIterableTransform @ 'keyword offside try/finally block', 'try ::\ncatch err ::',
       @{} pre_tokens: @[] 'try', '{', '}', 'catch', '(', 'name', ')', '{'
         , post_tokens: @[] '}'
-  , inTryCatchBlock: bindIterableTransform @ 'offside try/catch block', 'try ::', 'catch (err) ::',
+  , inTryCatchBlock: bindIterableTransform @ 'offside try/catch block', 'try ::', 'catch (err) :: catchBlock',
       @{} pre_tokens: @[] 'try', '{'
-        , post_tokens: @[] '}', 'catch', '(', 'name', ')', '{', '}'
-
-  // TODO: Investigate why the following causes errors
-  //, inTryCatchBlock_v2: bindIterableTransform @ 'keyword offside try/catch block', 'try ::', 'catch err ::'
+        , post_tokens: @[] '}', 'catch', '(', 'name', ')', '{', 'name', '}'
+  , inTryCatchBlock_v2: bindIterableTransform @ 'keyword offside try/catch block', 'try ::', 'catch err :: catchBlock',
+      @{} pre_tokens: @[] 'try', '{'
+        , post_tokens: @[] '}', 'catch', '(', 'name', ')', '{', 'name', '}'
 
 const functionTransforms = ::
     inFunction: bindIterableTransform @ 'vanilla function', 'function outer_fn() {', '}',
