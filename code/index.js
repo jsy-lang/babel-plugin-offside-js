@@ -3,7 +3,7 @@ const tt = babylon.tokTypes
 
 var _g_offsidePluginOpts
 const default_offsidePluginOpts =
-  @{} keyword_blocks: true
+  @{} check_blocks: true
 
 const _base_module_parse = babylon.parse
 babylon.parse = (input, options) => ::
@@ -268,21 +268,14 @@ function parseOffsideIndexMap(input) ::
   return lines
 
 
-const keyword_block_parents =
- @{} IfStatement: 'if'
-   , ForStatement: 'for'
-   , ForOfStatement: 'for'
-   , ForAwaitStatement: 'for-await'
-   , WhileStatement: 'while'
-   , DoWhileStatement: 'do-while'
-const lint_keyword_block_parents = new Set @ Object.keys @ keyword_block_parents
-
 const babel_plugin_id = `babel-plugin-offside--${Date.now()}`
 module.exports = exports = (babel) => ::
   return ::
     name: babel_plugin_id
     , pre(state) ::
         this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
+    , post(state) ::
+        //console.dir @ state.ast.program, @{} colors: true, depth: null
 
     , manipulateOptions(opts, parserOpts) ::
         parserOpts.plugins.push('asyncGenerators', 'classProperties', 'decorators', 'functionBind')
@@ -293,21 +286,30 @@ module.exports = exports = (babel) => ::
         parserOpts.offsidePluginOpts = offsidePluginOpts || default_offsidePluginOpts
 
     , visitor: ::
-        ExpressionStatement(path) ::
-          if (!this.opts.keyword_blocks) :: return
-          if (!lint_keyword_block_parents.has(path.parent.type)) :: return
+        Program(path) ::
+          if this.opts.check_blocks :: ensureConsistentBlockIndent(path)
 
-          let keyword = keyword_block_parents[path.parent.type]
-          if ('if' === keyword && path.node === path.parent.alternate) ::
-            keyword = 'else' // fixup if/else combined parent condition
+      , BlockStatement(path) ::
+          if this.opts.check_blocks :: ensureConsistentBlockIndent(path)
 
-          throw path.buildCodeFrameError @
-            `Keyword '${keyword}' should be followed by a block statement using '::' or matching '{' / '}'. \n` +
-            `    (From 'keyword_blocks' enforcement option of babel-plugin-offside)`
+function ensureConsistentBlockIndent(path) ::
+  const body = path.node.body
+  if !body || !body.length :: return
+
+  let prev_line
+  const block_column = body[0].loc.start.column
+  for const child of body ::
+    const start = child.loc.start
+    if start.line != prev_line && start.column != block_column ::
+      throw path.hub.file.buildCodeFrameError @ child,
+        `Indent mismatch. (block: ${block_column}, statement: ${start.column}). \n` +
+        `    (From 'check_blocks' enforcement option of babel-plugin-offside)`
+
+    prev_line = start.line
 
 
 Object.assign @ exports,
   @{}
     hookBabylon,
     parseOffsideIndexMap,
-
+    ensureConsistentBlockIndent,

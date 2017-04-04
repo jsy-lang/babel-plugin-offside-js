@@ -15,25 +15,10 @@ tap.finish()
 
 
 function * iterSyntaxVariations() ::
-  yield * iterForAwaitOfSyntaxErrors()
   yield * iterForAwaitOfStatements()
   yield * iterKeywordOffsideForAwaitOfStatements()
   yield * iterKeywordOffsideForAwaitOfWithCallStatements()
   yield * iterKeywordAtOffsideForAwaitOfStatements()
-
-
-function * iterForAwaitOfSyntaxErrors() ::
-  yield :: expectSyntaxError: true
-    , title: 'linted for await of statement with expression'
-    , source: @[] 'for await (each of iterable) singleStatement'
-
-  yield :: expectSyntaxError: true
-    , title: 'linted for await of let statement with expression'
-    , source: @[] 'for await (let each of iterable) singleStatement'
-
-  yield :: expectSyntaxError: true
-    , title: 'linted for await of const statement with expression'
-    , source: @[] 'for await (const each of iterable) singleStatement'
 
 
 function * iterForAwaitOfStatements() ::

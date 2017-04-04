@@ -13,59 +13,45 @@ tap.finish()
 
 
 function * iterSyntaxVariations() ::
-  yield * iterForStepSyntaxErrors()
-  yield * iterForStepStatements()
-
-
-function * iterForStepSyntaxErrors() ::
-  yield :: expectSyntaxError: true
-    , title: 'linted for/step statement with expression'
-    , source: @[] 'for (i=0; i<n; i++) singleStatement'
-
-  yield :: expectSyntaxError: true
-    , title: 'linted for/step statement with expression'
-    , source: @[] 'for (let i=0; i<n; i++) singleStatement'
-
-function * iterForStepStatements() ::
   yield :: expectValid: true
     , title: 'vanilla for/step statement'
     , source: @[] 'for (i=0; i<n; i++) { blockStatement }'
-    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'vanilla for/step let statement'
     , source: @[] 'for (let i=0; i<n; i++) { blockStatement }'
-    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'offside for/step statement'
     , source: @[] 'for (i=0; i<n; i++) :: blockStatement'
-    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'offside for/step let statement'
     , source: @[] 'for (let i=0; i<n; i++) :: blockStatement'
-    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'offside for/step let statement, multiline'
     , source: @[] 'for (let i=0; i<n; i++) ::'
                 , '  blockStatement'
-    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'keyword offside for/step statement'
     , source: @[] 'for i=0; i<n; i++ :: blockStatement'
-    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'keyword offside for/step statement, multiline'
     , source: @[] 'for i=0; i<n; i++ ::'
                 , '  blockStatement'
-    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'keyword offside for/step let statement'
     , source: @[] 'for let i=0; i<n; i++ :: blockStatement'
-    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'for', '(', 'let', 'name', '=', 'num', ';', 'name', '</>', 'name', ';', 'name', '++/--', ')', '{', 'name', '}'
 

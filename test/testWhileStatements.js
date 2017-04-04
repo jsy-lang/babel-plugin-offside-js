@@ -18,59 +18,51 @@ function * iterSyntaxVariations() ::
 
 function * iterWhileStmts() ::
   // while (expr) body variations
-  yield :: expectSyntaxError: true
-    , title: 'linted while statement with expression'
-    , source: @[] 'while (expr) singleStatement'
-
   yield :: expectValid: true
     , title: 'vanilla while statement'
     , source: @[] 'while (expr) { blockStatement }'
-    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'offside while statement'
     , source: @[] 'while (expr) :: blockStatement'
-    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'offside while statement, multiline'
     , source: @[] 'while (expr) ::'
                 , '  blockStatement'
-    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'keyword offside while statement'
     , source: @[] 'while expr :: blockStatement'
-    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}'
 
   yield :: expectValid: true
     , title: 'keyword offside while statement, multiline'
     , source: @[] 'while expr ::'
                 , '  blockStatement'
-    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}', 'eof'
+    , tokens: @[] 'while', '(', 'name', ')', '{', 'name', '}'
 
 
 function * iterDoWhileStmts() ::
   // do {} while (expr) body variations
-  yield :: expectSyntaxError: true
-    , title: 'linted do / while statement with expression'
-    , source: @[] 'do singleStatement while (expr)'
-
   yield :: expectValid: true
     , title: 'vanilla do / while statement'
     , source: @[] 'do { blockStatement } while (expr)'
-    , tokens: @[] 'do', '{', 'name', '}', 'while', '(', 'name', ')', 'eof'
+    , tokens: @[] 'do', '{', 'name', '}', 'while', '(', 'name', ')'
 
   yield :: expectValid: true
     , title: 'offside do / while statement'
     , source: @[] 'do :: blockStatement'
                 , 'while (expr)'
-    , tokens: @[] 'do', '{', 'name', '}', 'while', '(', 'name', ')', 'eof'
+    , tokens: @[] 'do', '{', 'name', '}', 'while', '(', 'name', ')'
 
   yield :: expectValid: true
     , title: 'keyword offside do / while statement'
     , source: @[] 'do :: blockStatement'
                 , 'while expr'
-    , tokens: @[] 'do', '{', 'name', '}', 'while', '(', 'name', ')', 'eof'
+    , tokens: @[] 'do', '{', 'name', '}', 'while', '(', 'name', ')'
 
 

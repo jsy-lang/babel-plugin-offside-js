@@ -22,17 +22,17 @@ function * iterPromiseCatch() ::
   yield :: expectValid: true
     , title: 'promise.catch vanilla'
     , source: @[] 'promise.catch(err => err)'
-    , tokens: @[] "name", ".", "catch", "(", "name", "=>", "name", ")", "eof"
+    , tokens: @[] 'name', '.', 'catch', '(', 'name', '=>', 'name', ')'
 
   yield :: expectValid: true
     , title: 'promise.catch offside arrow expression'
     , source: @[] 'promise.catch @ err => err'
-    , tokens: @[] "name", ".", "catch", "(", "name", "=>", "name", ")", "eof"
+    , tokens: @[] 'name', '.', 'catch', '(', 'name', '=>', 'name', ')'
 
   yield :: expectValid: true
     , title: 'promise.catch offside arrow block'
     , source: @[] 'promise.catch @ err => :: err'
-    , tokens: @[] "name", ".", "catch", "(", "name", "=>", "{", "name", "}", ")", "eof"
+    , tokens: @[] 'name', '.', 'catch', '(', 'name', '=>', '{', 'name', '}', ')'
 
 
 function * iterHashCatchFn() ::
@@ -40,19 +40,19 @@ function * iterHashCatchFn() ::
   yield :: expectValid: true
     , title: 'hash (vanilla) with catch entry arrow expression'
     , source: @[] 'const ns = {catch: err => err}'
-    , tokens: @[] "const", "name", "=", "{", "catch", ":", "name", "=>", "name", "}", "eof"
+    , tokens: @[] 'const', 'name', '=', '{', 'catch', ':', 'name', '=>', 'name', '}'
 
   yield :: expectValid: true
     , title: 'hash (offside) with catch entry arrow expression'
     , source: @[] 'const ns = @{} catch: err => err'
-    , tokens: @[] "const", "name", "=", "{", "catch", ":", "name", "=>", "name", "}", "eof"
+    , tokens: @[] 'const', 'name', '=', '{', 'catch', ':', 'name', '=>', 'name', '}'
 
   yield :: expectValid: true
     , title: 'hash (offside) with catch entry arrow block'
     , source: @[] 'const ns = @{} catch: err => :: err'
-    , tokens: @[] "const", "name", "=", "{", "catch", ":", "name", "=>", "{", "name", "}", "}", "eof"
+    , tokens: @[] 'const', 'name', '=', '{', 'catch', ':', 'name', '=>', '{', 'name', '}', '}'
 
   yield :: expectValid: true
     , title: 'hash (offside) with catch function'
     , source: @[] 'const ns = @{} catch(err) :: '
-    , tokens: @[] "const", "name", "=", "{", "catch", "(", "name", ")", "{", "}", "}", "eof"
+    , tokens: @[] 'const', 'name', '=', '{', 'catch', '(', 'name', ')', '{', '}', '}'
