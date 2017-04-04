@@ -294,6 +294,7 @@ module.exports = exports = (babel) => ::
 
 function ensureConsistentBlockIndent(path) ::
   const body = path.node.body
+    .filter @ child => child.loc // synthetic children sometimes do not have locations
   if !body || !body.length :: return
 
   let prev_line
