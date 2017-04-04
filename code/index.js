@@ -253,6 +253,7 @@ pp.popOffside = function() ::
 const rx_offside = /^([ \t]*)(.*)$/mg
 function parseOffsideIndexMap(input) ::
   let lines = [null], posLastContent=0, last=['', 0]
+  let idx_lastContent=0
 
   let ans = input.replace @ rx_offside, (match, indent, content, pos) => ::
     if (!content) ::
@@ -260,11 +261,12 @@ function parseOffsideIndexMap(input) ::
     else ::
       // valid content; set last to current indent
       posLastContent = pos + match.length
+      idx_lastContent = lines.length
       last = [indent, posLastContent]
-
     lines.push({line: lines.length, posLastContent, indent, content})
     return ''
 
+  lines.splice(1+idx_lastContent) // trim trailing whitespace
   return lines
 
 
@@ -313,7 +315,7 @@ function ensureConsistentBlockIndent(path, body) ::
         `Indent mismatch. (block: ${block_column}, statement: ${start.column}). \n` +
         `    (From 'check_blocks' enforcement option of babel-plugin-offside)`
 
-    prev_line = start.line
+    prev_line = child.loc.end.line
 
 
 Object.assign @ exports,
