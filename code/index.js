@@ -274,8 +274,8 @@ module.exports = exports = (babel) => ::
     name: babel_plugin_id
     , pre(state) ::
         this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
-    , post(state) ::
-        //console.dir @ state.ast.program, @{} colors: true, depth: null
+
+    //, post(state) :: console.dir @ state.ast.program, @{} colors: true, depth: null
 
     , manipulateOptions(opts, parserOpts) ::
         parserOpts.plugins.push('asyncGenerators', 'classProperties', 'decorators', 'functionBind')
@@ -287,13 +287,20 @@ module.exports = exports = (babel) => ::
 
     , visitor: ::
         Program(path) ::
-          if this.opts.check_blocks :: ensureConsistentBlockIndent(path)
+          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.body)
 
       , BlockStatement(path) ::
-          if this.opts.check_blocks :: ensureConsistentBlockIndent(path)
+          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.body)
 
-function ensureConsistentBlockIndent(path) ::
-  const body = path.node.body
+      , SwitchStatement(path) ::
+          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.cases)
+
+      , SwitchCase(path) ::
+          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.consequent)
+
+function ensureConsistentBlockIndent(path, body) ::
+  if null == body :: body = path.node.body
+  body = Array.from(body)
     .filter @ child => child.loc // synthetic children sometimes do not have locations
   if !body || !body.length :: return
 

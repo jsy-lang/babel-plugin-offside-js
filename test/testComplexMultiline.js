@@ -14,6 +14,12 @@ tap.finish()
 
 function * iterSyntaxVariations() ::
   yield :: expectSyntaxError: true
+    , title: 'silent mixed block indentation should throw a SyntaxError'
+    , source: @[] 'if (cond)'
+                , '  firstStatement'
+                , '  secondStatement'
+
+  yield :: expectSyntaxError: true
     , title: 'mixed block indentation should throw a SyntaxError'
     , source: @[] 'if cond ::'
                 , '  firstStatement'
