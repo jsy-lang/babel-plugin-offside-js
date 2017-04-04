@@ -303,19 +303,28 @@ module.exports = exports = (babel) => ::
 function ensureConsistentBlockIndent(path, body) ::
   if null == body :: body = path.node.body
   body = Array.from(body)
-    .filter @ child => child.loc // synthetic children sometimes do not have locations
   if !body || !body.length :: return
 
-  let prev_line
-  const block_column = body[0].loc.start.column
+  let prev_line, block_column=null
   for const child of body ::
-    const start = child.loc.start
-    if start.line != prev_line && start.column != block_column ::
+    const loc = child.loc
+    if !loc ::
+      // A synthetic child often does not have a location.
+      // Furthermore, a synthetic child indicates that something is mucking
+      // around with the AST. Adapt by resetting block_column and enforcing
+      // only across consecutive entries with valid locations.
+      block_column = null
+      continue
+    else if null === block_column ::
+      // assume the first location is indented properly…
+      block_column = loc.start.column
+
+    if loc.start.line != prev_line && loc.start.column != block_column ::
       throw path.hub.file.buildCodeFrameError @ child,
-        `Indent mismatch. (block: ${block_column}, statement: ${start.column}). \n` +
+        `Indent mismatch. (block: ${block_column}, statement: ${loc.start.column}). \n` +
         `    (From 'check_blocks' enforcement option of babel-plugin-offside)`
 
-    prev_line = child.loc.end.line
+    prev_line = loc.end.line
 
 
 Object.assign @ exports,
