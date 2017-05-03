@@ -3,7 +3,7 @@ const tt = babylon.tokTypes
 
 var _g_offsidePluginOpts
 const default_offsidePluginOpts =
-  @{} check_blocks: true
+  @{} check_blocks: /\/node_modules\/|\\node_modules\\/
 
 const _base_module_parse = babylon.parse
 babylon.parse = (input, options) => ::
@@ -271,11 +271,24 @@ function parseOffsideIndexMap(input) ::
 
 
 const babel_plugin_id = `babel-plugin-offside--${Date.now()}`
+
+const isNodeModuleDependency = aFilePath =>
+  /\/node_modules\/|\\node_modules\\/.test @ aFilePath
 module.exports = exports = (babel) => ::
   return ::
     name: babel_plugin_id
     , pre(state) ::
         this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
+
+        let check_blocks = this.opts.check_blocks
+        if check_blocks instanceof Function ::
+          check_blocks = check_blocks @ state.opts.filename
+        else if check_blocks instanceof RegExp ::
+          check_blocks = ! check_blocks.test @ state.opts.filename
+        else if 'string' === typeof check_blocks ::
+          check_blocks = ! new RegExp(check_blocks).test @ state.opts.filename
+
+        this.opts.check_blocks = check_blocks = !! check_blocks
 
     //, post(state) :: console.dir @ state.ast.program, @{} colors: true, depth: null
 
