@@ -214,4 +214,12 @@ tap.test @ 'ternary with @ function application',
 
     t.equal @ x, g
 
+tap.test @ 'expressjs-like composite route binding', t => ::
+  const mock = :: get() ::
+  const wrapper = function(fn) ::
+
+  mock.get @ '/someRoute', wrapper @ async (req, res) => ::
+    res.json @ {worked: true}
+
+
 tap.finish()

@@ -176,6 +176,14 @@ pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
   innerIndent = first.indent > innerIndent
     ? first.indent : innerIndent
 
+  if stackTop && stackTop.last.posLastContent < last.posLastContent::
+    // Fixup enclosing scopes. Happens in situations like: `server.on @ wraper @ (...args) => ::`
+    const stack = this.state.offside
+    for let idx = stack.length-1; idx>0; idx-- ::
+      let tip = stack[idx]
+      if tip.last.posLastContent >= last.posLastContent :: break
+      tip.last = last
+
   return {op, innerIndent, first, last}
 
 
