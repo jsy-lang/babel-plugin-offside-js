@@ -75,6 +75,7 @@ let at_offside =
     , '::{}': {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2}
     , '::[]': {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2}
     , '@':    {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true}
+    , '@:':   {tokenPre: tt.parenL, tokenPost: tt.parenR, nestOp: '::{}', nestInner: false, keywordBlock: true}
     , '@()':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
     , '@{}':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
     , '@[]':  {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2}
@@ -118,6 +119,9 @@ pp.finishToken = function(type, val) ::
     let op = at_offside[str_op]
     if op.keywordBlock && recentKeyword && tt_offside_keyword_with_args.has(recentKeyword) ::
       op = at_offside.keyword_args
+
+    if op.nestOp ::
+      state.offsideNextOp = at_offside[op.nestOp]
     if op :: return this.finishOffsideOp(op)
 
   if tt.eof === type ::
