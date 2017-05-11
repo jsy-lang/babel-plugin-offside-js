@@ -75,7 +75,7 @@ let at_offside =
     , '::{}': {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2}
     , '::[]': {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2}
     , '@':    {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true}
-    , '@:':   {tokenPre: tt.parenL, tokenPost: tt.parenR, nestOp: '::{}', nestInner: false, keywordBlock: true}
+    , '@:':   {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::{}'}
     , '@()':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
     , '@{}':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
     , '@[]':  {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2}
@@ -87,6 +87,8 @@ pp.isForAwait = function (keywordType, type, val) ::
   return tt._for === keywordType
     && tt.name === type
     && 'await' === val
+
+const rx_offside_op = /(\S+)[ \t]*(\r\n|\r|\n)?/
 
 pp._base_finishToken = baseProto.finishToken
 pp.finishToken = function(type, val) ::
@@ -114,15 +116,24 @@ pp.finishToken = function(type, val) ::
 
   if type === tt.at || type === tt.doubleColon ::
     const pos0 = state.start, pos1 = state.pos + 2
-    const str_op = this.input.slice(pos0, pos1).split(/\s/, 1)[0]
+    const m_op = rx_offside_op.exec @ this.input.slice(pos0)
+    const str_op = m_op[1]
+    const lineEndsWithOp = !! m_op[2]
 
     let op = at_offside[str_op]
-    if op.keywordBlock && recentKeyword && tt_offside_keyword_with_args.has(recentKeyword) ::
-      op = at_offside.keyword_args
+    if op ::
+      if op.keywordBlock && recentKeyword && tt_offside_keyword_with_args.has(recentKeyword) ::
+        op = at_offside.keyword_args
 
-    if op.nestOp ::
-      state.offsideNextOp = at_offside[op.nestOp]
-    if op :: return this.finishOffsideOp(op)
+      else if lineEndsWithOp && op.nestInner::
+        // all offside operators at the end of a line implicitly don't nestInner
+        op = @{} __proto__: op, nestInner: false
+
+      this.finishOffsideOp(op, op.extraChars)
+
+      if op.nestOp ::
+        state.offsideNextOp = at_offside[op.nestOp]
+      return
 
   if tt.eof === type ::
     if state.offside.length ::
@@ -192,12 +203,13 @@ pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
 
 
 
-pp.finishOffsideOp = function (op) ::
+pp.finishOffsideOp = function (op, extraChars) ::
   const stack = this.state.offside
   let stackTop = stack[stack.length - 1]
   let recentKeywordTop
   if (op.codeBlock) ::
     if (stackTop && stackTop.inKeywordArg) ::
+      // We're at the end of an offside keyword block; restore enclosing ()
       this.popOffside()
       this.state.offsideNextOp = op
       this.state.offsideRecentTop = stackTop
@@ -206,8 +218,8 @@ pp.finishOffsideOp = function (op) ::
     recentKeywordTop = this.state.offsideRecentTop
     this.state.offsideRecentTop = null
 
-  if (op.extraChars) ::
-    this.state.pos += op.extraChars
+  if extraChars ::
+    this.state.pos += extraChars
 
   this._base_finishToken(op.tokenPre)
 

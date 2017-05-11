@@ -215,7 +215,7 @@ tap.test @ 'ternary with @ function application',
     t.equal @ x, g
 
 
-tap.test.only @ 'named-parameters with @: function application', t => ::
+tap.test @ 'named-parameters with @: function application', t => ::
   const example_one = (opt) => opt
   t.deepEqual @ {first: true, second: [1,2,3]},
     example_one @: first: true, second: @[] 1, 2, 3
@@ -223,6 +223,11 @@ tap.test.only @ 'named-parameters with @: function application', t => ::
   const example_two = (a,b,c) => @: a,b,c
   t.deepEqual @ {a: 19, b: 42, c: 1942}, example_two @ 19, 42, 1942
 
+tap.test @ 'chained function application with trailing @:', t => ::
+  const identity = x => x
+  t.deepEqual @ {answer: 42},
+    identity @ identity @ identity @:
+      answer: 42
 
 tap.test @ 'expressjs-like composite route binding', t => ::
   const mock = :: get() ::
