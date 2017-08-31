@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-offside-js",
-  "version": "0.7.1",
+  "version": "0.7.2-0",
   "description": "Babel offside (indention) Javascript syntax extension",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
   "license": "BSD-2-Clause",
@@ -22,9 +22,9 @@
   "homepage": "https://github.com/shanewholloway/babel-plugin-offside-js#readme",
   "main": "dist/index.js",
   "devDependencies": {
-    "babel-cli": "^6.23.0",
-    "babel-core": "^6.23.1",
-    "tap-lite-tester": "^0.3.9"
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "tap-lite-tester": "^0.5.2"
   },
   "babel": {
     "env": {
