@@ -90,6 +90,25 @@ tap.test @ 'Fors work without parens',
       t.equal @ item, tmap[item]
 
 
+tap.test @ 'Using @# and @: operators',
+  t => ::
+    let tarr = @#
+          "whale"
+        , "lion"
+        , "frog"
+        , "cat"
+
+    const tmap = @:
+          whale: "whale"
+        , lion: "lion"
+        , frog: "frog"
+        , cat : "cat"
+
+
+    for let item of tarr ::
+      t.equal @ item, tmap[item]
+
+
 tap.test @ 'If works with parens',
   t => ::
     let first_test = true
