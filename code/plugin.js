@@ -1,6 +1,7 @@
 const babel_plugin_id = `babel-plugin-offside--${Date.now()}`
-const default_offsidePluginOpts =
-  @{} check_blocks: /\/node_modules\/|\\node_modules\\/
+const default_offsidePluginOpts = @{}
+    check_blocks: /\/node_modules\/|\\node_modules\\/
+  , implicit_commas: true
 
 
 export default function babel_plugin_offside_js(babel) ::

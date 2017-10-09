@@ -2,20 +2,24 @@ import * as babylon from 'babylon'
 const tt = babylon.tokTypes
 
 export const at_offside = @{}
-      '::':   {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, codeBlock: true}
-    , '::@':  {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 1}
-    , '::()': {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 2}
-    , '::{}': {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2}
-    , '::[]': {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2}
-    , '@':    {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true}
-    , '@:':   {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::{}'}
-    , '@#':   {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::[]'}
-    , '@()':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
-    , '@{}':  {tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2}
-    , '@[]':  {tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2}
-    // note:  no '@()' -- standardize to use single-char '@ ' instead
-    , keyword_args: {tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true}
+      '::':   @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, codeBlock: true, implicitCommas: false,
+    , '::@':  @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 1, implicitCommas: false,
+    , '::()': @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 2, implicitCommas: false,
+    , '::{}': @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2, implicitCommas: false,
+    , '::[]': @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2, implicitCommas: false,
 
+    , '@':    @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true, implicitCommas: true,
+    , '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::{}', implicitCommas: true,
+    , '@#':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::[]', implicitCommas: true,
+    , '@()':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
+    , '@{}':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
+    , '@[]':  @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2, implicitCommas: true,
+
+    // note:  no '@()' -- standardize to use single-char '@ ' instead
+    , keyword_args: @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true, implicitCommas: false,
+
+Object.entries(at_offside).forEach @ ([name, opRec]) =>
+  Object.assign @ opRec, @: name
 
 const rx_offside = /^([ \t]*)(.*)$/mg
 export function parseOffsideIndexMap(input) ::
@@ -30,7 +34,7 @@ export function parseOffsideIndexMap(input) ::
       posLastContent = pos + match.length
       idx_lastContent = lines.length
       last = [indent, posLastContent]
-    lines.push @: line: lines.length, posLastContent, indent, content
+    lines.push @: line: lines.length, posFirstContent:pos, posLastContent, indent, content
     return ''
 
   lines.splice(1+idx_lastContent) // trim trailing whitespace

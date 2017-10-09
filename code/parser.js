@@ -148,7 +148,8 @@ pp.offsideIndent = function (line0, outerIndent, innerIndent) ::
 
 
 pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
-  const line0 = this.state.curLine
+  const state = this.state
+  const line0 = state.curLine
   const first = this.offside_lines[line0]
 
   let indent, keywordNestedIndent
@@ -175,13 +176,15 @@ pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
 
   if stackTop && stackTop.last.posLastContent < last.posLastContent::
     // Fixup enclosing scopes. Happens in situations like: `server.on @ wraper @ (...args) => ::`
-    const stack = this.state.offside
+    const stack = state.offside
     for let idx = stack.length-1; idx>0; idx-- ::
       let tip = stack[idx]
       if tip.last.posLastContent >= last.posLastContent :: break
       tip.last = last
 
-  return {op, innerIndent, first, last}
+  return @{} op, innerIndent, first, last
+    , start: state.start, end: state.end
+    , loc: @{} start: state.startLoc, end: state.endLoc
 
 
 
@@ -215,34 +218,64 @@ pp.finishOffsideOp = function (op, extraChars) ::
 
 pp._base_skipSpace = baseProto.skipSpace
 pp.skipSpace = function() ::
-  if null !== this.state.offsideNextOp :: return
+  const state = this.state
+  if null !== state.offsideNextOp :: return
 
-  const stack = this.state.offside
+  const stack = state.offside
   let stackTop
   if stack && stack.length ::
     stackTop = stack[stack.length-1]
-    this.state.offsidePos = stackTop.last.posLastContent
-  else :: this.state.offsidePos = -1
+    state.offsidePos = stackTop.last.posLastContent
+  else :: state.offsidePos = -1
 
   try ::
     this._base_skipSpace()
-    this.state.offsidePos = -1
+    state.offsidePos = -1
+
+    state.offsideImplicitComma = undefined !== stackTop
+      ? this.offsideCheckImplicitComma(stackTop)
+      : null
   catch err ::
     if err !== offsideBreakout :: throw err
 
+pp.offsideCheckImplicitComma = function(stackTop) ::
+  if ! stackTop.op.implicitCommas || ! this.offsidePluginOpts.implicit_commas ::
+    return false // not enabled for this offside op
+
+  const state = this.state, column = state.pos - state.lineStart
+  if column !== stackTop.innerIndent.length ::
+    return false // not at the exact right indent
+  if stackTop.end >= state.end ::
+    return false // no comma before the first element
+  if tt.comma === state.type ::
+    return false // there's an explicit comma already present
+  if state.type.binop || state.type.beforeExpr ::
+    return false // there's an operator or arrow function preceeding this line
+
+  if this.isLookahead :: return false // disallow recursive lookahead
+  const lookahead = this.lookahead()
+  if tt.comma === lookahead.type ::
+    return false // there's an explicit comma present in the next token
+
+  console.log @ 'GOTIME', state.type, state
+  return true // a comma is needed
 
 pp._base_readToken = baseProto.readToken
 pp.readToken = function(code) ::
-  const offsideNextOp = this.state.offsideNextOp
+  const state = this.state
+
+  if state.offsideImplicitComma ::
+    return this._base_finishToken(tt.comma)
+
+  const offsideNextOp = state.offsideNextOp
   if null !== offsideNextOp ::
-    this.state.offsideNextOp = null
+    state.offsideNextOp = null
     return this.finishOffsideOp(offsideNextOp)
 
-  else if this.state.pos === this.state.offsidePos ::
+  if state.pos === state.offsidePos ::
     return this.popOffside()
 
-  else ::
-    return this._base_readToken(code)
+  return this._base_readToken(code)
 
 pp.popOffside = function() ::
   const stack = this.state.offside
