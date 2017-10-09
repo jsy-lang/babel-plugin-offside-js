@@ -2,21 +2,21 @@ import * as babylon from 'babylon'
 const tt = babylon.tokTypes
 
 export const at_offside = @{}
-      '::':   @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, codeBlock: true, implicitCommas: false,
-    , '::@':  @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 1, implicitCommas: false,
-    , '::()': @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 2, implicitCommas: false,
-    , '::{}': @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2, implicitCommas: false,
-    , '::[]': @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2, implicitCommas: false,
+  '::':   @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, codeBlock: true, implicitCommas: false,
+  '::@':  @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 1, implicitCommas: false,
+  '::()': @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 2, implicitCommas: false,
+  '::{}': @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, extraChars: 2, implicitCommas: false,
+  '::[]': @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2, implicitCommas: false,
 
-    , '@':    @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true, implicitCommas: true,
-    , '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::{}', implicitCommas: true,
-    , '@#':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::[]', implicitCommas: true,
-    , '@()':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
-    , '@{}':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
-    , '@[]':  @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2, implicitCommas: true,
+  '@':    @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true, implicitCommas: true,
+  '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::{}', implicitCommas: true,
+  '@#':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::[]', implicitCommas: true,
+  '@()':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
+  '@{}':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
+  '@[]':  @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2, implicitCommas: true,
 
-    // note:  no '@()' -- standardize to use single-char '@ ' instead
-    , keyword_args: @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true, implicitCommas: false,
+  // note:  no '@()' -- standardize to use single-char '@ ' instead
+  keyword_args: @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true, implicitCommas: false,
 
 Object.entries(at_offside).forEach @ ([name, opRec]) =>
   Object.assign @ opRec, @: name
