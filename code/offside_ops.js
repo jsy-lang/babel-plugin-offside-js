@@ -9,14 +9,19 @@ export const at_offside = @{}
   '::[]': @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2, implicitCommas: false,
 
   '@':    @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true, implicitCommas: true,
-  '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::{}', implicitCommas: true,
-  '@#':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '::[]', implicitCommas: true,
+  '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '\0{,}', implicitCommas: true,
+  '@#':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '\0[,]', implicitCommas: true,
   '@()':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
   '@{}':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
   '@[]':  @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2, implicitCommas: true,
 
   // note:  no '@()' -- standardize to use single-char '@ ' instead
   keyword_args: @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true, implicitCommas: false,
+
+  // synthetic nestOp delegate operations
+  '\0{,}': @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, implicitCommas: true,
+  '\0[,]': @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, implicitCommas: true,
+
 
 Object.entries(at_offside).forEach @ ([name, opRec]) =>
   Object.assign @ opRec, @: name
