@@ -14,7 +14,7 @@ const Parser = hookBabylon()
 const baseProto = Parser.prototype
 const pp = Parser.prototype = Object.create(baseProto)
 
-function hookBabylon() ::
+export function hookBabylon() ::
   // abuse Babylon token updateContext callback extract
   // the reference to Parser
 
