@@ -238,27 +238,30 @@ pp.skipSpace = function() ::
   catch err ::
     if err !== offsideBreakout :: throw err
 
+
+const tt_offside_disrupt_implicit_comma = new Set @#
+  tt.comma, tt.dot, tt.arrow
+
 pp.offsideCheckImplicitComma = function(stackTop) ::
   if ! stackTop.op.implicitCommas || ! this.offsidePluginOpts.implicit_commas ::
-    return false // not enabled for this offside op
+    return null // not enabled for this offside op
 
-  const state = this.state, column = state.pos - state.lineStart
+  const state = this.state, state_type=state.type, column = state.pos - state.lineStart
   if column !== stackTop.innerIndent.length ::
-    return false // not at the exact right indent
+    return null // not at the exact right indent
   if stackTop.end >= state.end ::
     return false // no comma before the first element
-  if tt.comma === state.type ::
+  if tt.comma === state_type ::
     return false // there's an explicit comma already present
-  if state.type.binop || state.type.beforeExpr ::
+  if state_type.binop || state_type.beforeExpr ::
     return false // there's an operator or arrow function preceeding this line
 
   if this.isLookahead :: return false // disallow recursive lookahead
-  const lookahead = this.lookahead()
-  if tt.comma === lookahead.type ::
-    return false // there's an explicit comma present in the next token
+  const {type: next_type} = this.lookahead()
+  if tt_offside_disrupt_implicit_comma.has(next_type) || next_type.binop ::
+    return false // there's a comma, dot, operator, or other token that precludes an implicit leading comma
 
-  console.log @ 'GOTIME', state.type, state
-  return true // a comma is needed
+  return true // an implicit comma is needed
 
 pp._base_readToken = baseProto.readToken
 pp.readToken = function(code) ::
