@@ -1,25 +1,11 @@
-import * as babylon from 'babylon'
-const tt = babylon.tokTypes
+import {offsideOperatorsForBabylon, parseOffsideIndexMap} from './offside_ops'
 
-import {at_offside, parseOffsideIndexMap} from './offside_ops'
-
-var _g_offsidePluginOpts
-
-const _base_module_parse = babylon.parse
-babylon.parse = (input, options) => ::
-  _g_offsidePluginOpts = options ? options.offsidePluginOpts : undefined
-  return _base_module_parse(input, options)
-
-const Parser = hookBabylon()
-const baseProto = Parser.prototype
-const pp = Parser.prototype = Object.create(baseProto)
-
-export function hookBabylon() ::
+export function hookBabylon(babylon) ::
   // abuse Babylon token updateContext callback extract
   // the reference to Parser
 
   let Parser
-  const tgt_patch = tt.braceL
+  const tgt_patch = babylon.tokTypes.braceL
   const fn_updateContext = tgt_patch.updateContext
   tgt_patch.updateContext = function (prevType) ::
     tgt_patch.updateContext = fn_updateContext
@@ -29,6 +15,46 @@ export function hookBabylon() ::
   if ! Parser ::
     throw new Error @ "Failed to hook Babylon Parser"
   return Parser
+
+
+export function installOffsideBabylonParsers() ::
+  const hookList = []
+
+  try :: hookList.push @
+    require('babylon')
+  catch err ::
+
+  try :: hookList.push @
+    require('babel-cli/node_modules/babylon')
+  catch err ::
+
+  try :: hookList.push @
+    require('babel-core/node_modules/babylon')
+  catch err ::
+
+  if 0 === hookList.length ::
+    throw new Error @ `Unable to load "babylon" parser package`
+
+  return hookList.map @ babylon =>
+    asOffsideJSBabylonParser(babylon)
+  
+
+export function asOffsideJSBabylonParser(babylon)
+{ // begin per-babylon instance monkeypatching
+
+const Parser = hookBabylon(babylon)
+const baseProto = Parser.prototype
+const pp = Parser.prototype = Object.create(baseProto)
+const tt = babylon.tokTypes
+
+const at_offside = offsideOperatorsForBabylon(tt)
+
+var _g_offsidePluginOpts
+
+const _base_module_parse = babylon.parse
+babylon.parse = (input, options) => ::
+  _g_offsidePluginOpts = options ? options.offsidePluginOpts : undefined
+  return _base_module_parse(input, options)
 
 
 pp._base_parse = baseProto.parse
@@ -289,3 +315,7 @@ pp.popOffside = function() ::
 
   this._base_finishToken(stackTop.op.tokenPost)
   return stackTop
+
+
+return Parser
+} // end per-babylon instance monkeypatching
