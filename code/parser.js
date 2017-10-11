@@ -48,21 +48,21 @@ pp.initOffside = function() ::
   _g_offsidePluginOpts = null
 
   this.state._pos = this.state.pos
-  Object.defineProperty @ this.state, 'pos',
-    @{} enumerable: true
-      , get() :: return this._pos
-      , set(pos) ::
-          // interrupt skipSpace algorithm when we hit our position 'breakpoint'
-          const offPos = this.offsidePos
-          if offPos>=0 && (pos > offPos) ::
-            throw offsideBreakout
+  Object.defineProperty @ this.state, 'pos', @{}
+    enumerable: true
+    get() :: return this._pos
+    set(pos) ::
+      // interrupt skipSpace algorithm when we hit our position 'breakpoint'
+      const offPos = this.offsidePos
+      if offPos>=0 && (pos > offPos) ::
+        throw offsideBreakout
 
-          this._pos = pos
+      this._pos = pos
 
 
 const tt_offside_keyword_with_args = new Set @#
       tt._if, tt._while, tt._for
-    , tt._catch, tt._switch
+      tt._catch, tt._switch
 
 const tt_offside_keyword_lookahead_skip = new Set @#
       tt.parenL, tt.colon, tt.comma, tt.dot
@@ -183,8 +183,8 @@ pp.offsideBlock = function (op, stackTop, recentKeywordTop) ::
       tip.last = last
 
   return @{} op, innerIndent, first, last
-    , start: state.start, end: state.end
-    , loc: @{} start: state.startLoc, end: state.endLoc
+      start: state.start, end: state.end
+      loc: @{} start: state.startLoc, end: state.endLoc
 
 
 

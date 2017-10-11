@@ -1,48 +1,48 @@
 const babel_plugin_id = `babel-plugin-offside--${Date.now()}`
 const default_offsidePluginOpts = @{}
     check_blocks: /\/node_modules\/|\\node_modules\\/
-  , implicit_commas: true
+    implicit_commas: true
 
 
 export default function babel_plugin_offside_js(babel) ::
   return @:
-      name: babel_plugin_id
+    name: babel_plugin_id
 
-    , pre(state) ::
-        this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
+    pre(state) ::
+      this.opts = Object.assign @ {}, default_offsidePluginOpts, this.opts
 
-        let check_blocks = this.opts.check_blocks
-        if check_blocks instanceof Function ::
-          check_blocks = check_blocks @ state.opts.filename
-        else if check_blocks instanceof RegExp ::
-          check_blocks = ! check_blocks.test @ state.opts.filename
-        else if 'string' === typeof check_blocks ::
-          check_blocks = ! new RegExp(check_blocks).test @ state.opts.filename
+      let check_blocks = this.opts.check_blocks
+      if check_blocks instanceof Function ::
+        check_blocks = check_blocks @ state.opts.filename
+      else if check_blocks instanceof RegExp ::
+        check_blocks = ! check_blocks.test @ state.opts.filename
+      else if 'string' === typeof check_blocks ::
+        check_blocks = ! new RegExp(check_blocks).test @ state.opts.filename
 
-        this.opts.check_blocks = check_blocks = !! check_blocks
+      this.opts.check_blocks = check_blocks = !! check_blocks
 
-    //, post(state) :: console.dir @ state.ast.program, @{} colors: true, depth: null
+    //post(state) :: console.dir @ state.ast.program, @{} colors: true, depth: null
 
-    , manipulateOptions(opts, parserOpts) ::
-        parserOpts.plugins.push('asyncGenerators', 'classProperties', 'decorators', 'functionBind')
-        const offsidePluginOpts = opts.plugins
-          .filter @ plugin => plugin[0] && babel_plugin_id === plugin[0].key && plugin[1]
-          .map @ plugin => plugin[1]
-          .pop()
-        parserOpts.offsidePluginOpts = offsidePluginOpts || default_offsidePluginOpts
+    manipulateOptions(opts, parserOpts) ::
+      parserOpts.plugins.push('asyncGenerators', 'classProperties', 'decorators', 'functionBind')
+      const offsidePluginOpts = opts.plugins
+        .filter @ plugin => plugin[0] && babel_plugin_id === plugin[0].key && plugin[1]
+        .map @ plugin => plugin[1]
+        .pop()
+      parserOpts.offsidePluginOpts = offsidePluginOpts || default_offsidePluginOpts
 
-    , visitor: ::
-        Program(path) ::
-          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.body)
+    visitor: @:
+      Program(path) ::
+        if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.body)
 
-      , BlockStatement(path) ::
-          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.body)
+      BlockStatement(path) ::
+        if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.body)
 
-      , SwitchStatement(path) ::
-          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.cases)
+      SwitchStatement(path) ::
+        if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.cases)
 
-      , SwitchCase(path) ::
-          if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.consequent)
+      SwitchCase(path) ::
+        if this.opts.check_blocks :: ensureConsistentBlockIndent(path, path.node.consequent)
 
 
 export function ensureConsistentBlockIndent(path, body) ::
