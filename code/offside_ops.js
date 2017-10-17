@@ -1,6 +1,11 @@
 
 export function offsideOperatorsForBabylon(tokTypes) ::
   const tt = tokTypes
+
+  const implicitCommaContext = @:
+    objectLiteral: new Set @#
+      tt.star // allow generator defintions with implicit commas
+
   const at_offside = @{}
     '::':   @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, codeBlock: true, implicitCommas: false,
     '::@':  @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, extraChars: 1, implicitCommas: false,
@@ -9,17 +14,17 @@ export function offsideOperatorsForBabylon(tokTypes) ::
     '::[]': @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, extraChars: 2, implicitCommas: false,
 
     '@':    @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true, implicitCommas: true,
-    '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '\0{,}', implicitCommas: true,
+    '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '\0{,}', implicitCommas: implicitCommaContext.objectLiteral,
     '@#':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '\0[,]', implicitCommas: true,
     '@()':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
-    '@{}':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
+    '@{}':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: implicitCommaContext.objectLiteral,
     '@[]':  @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2, implicitCommas: true,
 
     // note:  no '@()' -- standardize to use single-char '@ ' instead
     keyword_args: @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true, implicitCommas: false,
 
     // synthetic nestOp delegate operations
-    '\0{,}': @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, implicitCommas: true,
+    '\0{,}': @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: false, implicitCommas: implicitCommaContext.objectLiteral,
     '\0[,]': @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: false, implicitCommas: true,
 
 

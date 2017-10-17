@@ -266,10 +266,13 @@ pp.skipSpace = function() ::
 
 
 const tt_offside_disrupt_implicit_comma = new Set @#
-  tt.comma, tt.dot, tt.arrow
+  tt.comma, tt.dot, tt.arrow, tt.semi
 
 pp.offsideCheckImplicitComma = function(stackTop) ::
-  if ! stackTop.op.implicitCommas || ! this.offsidePluginOpts.implicit_commas ::
+  const {implicitCommas} = stackTop.op
+  if ! implicitCommas ::
+    return null // not enabled for this offside op
+  if ! this.offsidePluginOpts.implicit_commas ::
     return null // not enabled for this offside op
 
   const state = this.state, state_type=state.type, column = state.pos - state.lineStart
@@ -284,10 +287,17 @@ pp.offsideCheckImplicitComma = function(stackTop) ::
 
   if this.isLookahead :: return false // disallow recursive lookahead
   const {type: next_type} = this.lookahead()
-  if tt_offside_disrupt_implicit_comma.has(next_type) || next_type.binop ::
-    return false // there's a comma, dot, operator, or other token that precludes an implicit leading comma
 
-  return true // an implicit comma is needed
+  if tt_offside_disrupt_implicit_comma.has(next_type) ::
+    return false // there's a comma, dot, or function arrow token that precludes an implicit leading comma
+  if next_type.binop ::
+    if 'function' === typeof implicitCommas.has ::
+      // allow for tt.star in certain contexts — e.g. for generator method defintions
+      return implicitCommas.has(next_type)
+
+    return false // there's a binary operator that precludes an implicit leading comma
+  else ::
+    return true // an implicit comma is needed
 
 pp._base_readToken = baseProto.readToken
 pp.readToken = function(code) ::
