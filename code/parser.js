@@ -266,7 +266,7 @@ pp.skipSpace = function() ::
 
 
 const tt_offside_disrupt_implicit_comma = new Set @#
-  tt.comma, tt.dot, tt.arrow, tt.semi, tt.question
+  tt.comma, tt.dot, tt.arrow, tt.colon, tt.semi, tt.question
 
 pp.offsideCheckImplicitComma = function(stackTop) ::
   const {implicitCommas} = stackTop.op
