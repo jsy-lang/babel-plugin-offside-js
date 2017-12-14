@@ -9,4 +9,5 @@ implicit @ arg =>
 Object.assign @ {}, blah, @:
   one: two
   three
+  get six() :: return 2+4
   four: 'five'

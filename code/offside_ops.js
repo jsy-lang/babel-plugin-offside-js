@@ -39,12 +39,13 @@ export function parseOffsideIndexMap(input) ::
 
   input.replace @ rx_offside, (match, indent, content, pos) => ::
     if ! content ::
-      [indent, posLastContent] = last // blank line; use last valid content as end
+      posLastContent = last
+      indent = false
     else ::
       // valid content; set last to current indent
       posLastContent = pos + match.length
       idx_lastContent = lines.length
-      last = [indent, posLastContent]
+      last = posLastContent
     lines.push @: line: lines.length, posFirstContent:pos, posLastContent, indent, content
     return ''
 

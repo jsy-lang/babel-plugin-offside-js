@@ -167,7 +167,9 @@ pp.offsideIndent = function (line0, outerIndent, innerIndent) ::
       break
 
     line++; last = cur
-    if innerIndent > cur.indent ::
+    if false === innerIndent ::
+      innerIndent = cur.indent
+    else if innerIndent > cur.indent ::
       innerIndent = cur.indent
 
   return @{} line, last, innerIndent
