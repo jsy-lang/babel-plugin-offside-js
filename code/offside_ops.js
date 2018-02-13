@@ -16,9 +16,12 @@ export function offsideOperatorsForBabylon(tokTypes) ::
     '@':    @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, keywordBlock: true, implicitCommas: true,
     '@:':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '\0{,}', implicitCommas: implicitCommaContext.objectLiteral,
     '@#':   @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: true, extraChars: 1, nestOp: '\0[,]', implicitCommas: true,
+
     '@()':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: true,
     '@{}':  @{} tokenPre: tt.braceL, tokenPost: tt.braceR, nestInner: true, extraChars: 2, implicitCommas: implicitCommaContext.objectLiteral,
     '@[]':  @{} tokenPre: tt.bracketL, tokenPost: tt.bracketR, nestInner: true, extraChars: 2, implicitCommas: true,
+
+    '@=>':  @{} tokenPre: [tt.parenL, tt.parenL, tt.parenR, tt.arrow], tokenPost: tt.parenR, nestInner: true, extraChars: 2, implicitCommas: false,
 
     // note:  no '@()' -- standardize to use single-char '@ ' instead
     keyword_args: @{} tokenPre: tt.parenL, tokenPost: tt.parenR, nestInner: false, inKeywordArg: true, implicitCommas: false,

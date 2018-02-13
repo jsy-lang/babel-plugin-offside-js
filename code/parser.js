@@ -69,6 +69,7 @@ const offsideBreakout = new OffsideBreakout()
 pp.initOffside = function() ::
   this.state.offside = []
   this.state.offsideNextOp = null
+  this.state.offsideTokenStack = []
   this.offside_lines = parseOffsideIndexMap(this.input)
   this.offsidePluginOpts = _g_offsidePluginOpts || {}
   _g_offsidePluginOpts = null
@@ -99,6 +100,13 @@ pp.isForAwait = function (keywordType, type, val) ::
     && 'await' === val
 
 const rx_offside_op = /(\S+)[ \t]*(\r\n|\r|\n)?/
+
+pp.finishTokenStack = function(tokenOrList) ::
+  if Array.isArray(tokenOrList) ::
+    this.state.offsideTokenStack = tokenOrList.slice(1)
+    tokenOrList = tokenOrList[0]
+
+  return this._base_finishToken(tokenOrList)
 
 pp._base_finishToken = baseProto.finishToken
 pp.finishToken = function(type, val) ::
@@ -234,7 +242,7 @@ pp.finishOffsideOp = function (op, extraChars) ::
   if extraChars ::
     this.state.pos += extraChars
 
-  this._base_finishToken(op.tokenPre)
+  this.finishTokenStack(op.tokenPre)
 
   if this.isLookahead :: return
 
@@ -305,6 +313,9 @@ pp._base_readToken = baseProto.readToken
 pp.readToken = function(code) ::
   const state = this.state
 
+  if state.offsideTokenStack.length ::
+    return this._base_finishToken @
+      state.offsideTokenStack.shift()
   if state.offsideImplicitComma ::
     return this._base_finishToken(tt.comma)
 
@@ -325,7 +336,7 @@ pp.popOffside = function() ::
     : stack.pop()
   this.state.offsidePos = -1
 
-  this._base_finishToken(stackTop.op.tokenPost)
+  this.finishTokenStack(stackTop.op.tokenPost)
   return stackTop
 
 
