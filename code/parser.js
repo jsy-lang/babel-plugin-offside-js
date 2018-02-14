@@ -133,7 +133,7 @@ pp.finishToken = function(type, val) ::
     return this._base_finishToken(type, val)
 
   if type === tt.at || type === tt.doubleColon ::
-    const pos0 = state.start, pos1 = state.pos + 2
+    const pos0 = state.start
     const m_op = rx_offside_op.exec @ this.input.slice(pos0)
     const str_op = m_op[1]
     const lineEndsWithOp = !! m_op[2]
@@ -314,8 +314,11 @@ pp.readToken = function(code) ::
   const state = this.state
 
   if state.offsideTokenStack.length ::
-    return this._base_finishToken @
-      state.offsideTokenStack.shift()
+    const head = state.offsideTokenStack.shift()
+    if 'string' === typeof head ::
+      return this._base_finishToken(tt.name, head)
+    else return this._base_finishToken(head)
+
   if state.offsideImplicitComma ::
     return this._base_finishToken(tt.comma)
 

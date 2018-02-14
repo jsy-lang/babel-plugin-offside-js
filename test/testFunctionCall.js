@@ -5,7 +5,7 @@ const tap = require('tap-lite-tester')
 tap.start()
 
 genSyntaxTestCases @ tap, iterSyntaxVariations()
-if 0 ::
+if 1 ::
   for let xform of Object.values @ standardTransforms ::
     genSyntaxTestCases @ tap, xform @ iterSyntaxVariations()
 
@@ -14,9 +14,10 @@ tap.finish()
 
 function * iterSyntaxVariations() ::
   yield * iterCalls()
-  yield * iterHashCalls()
   yield * iterArrayCalls()
+  yield * iterHashCalls()
   yield * iterArrowCalls()
+  yield * iterArrowAsyncCalls()
 
 function * iterCalls() ::
   yield @{} expectValid: true
@@ -200,4 +201,65 @@ function * iterArrowCalls() ::
       '  value'
       '  second'
     tokens: @[] 'name', '(', '(', ')', '=>', '(', '[', 'name', ',', 'name', ']', ')', ')'
+
+
+function * iterArrowAsyncCalls() ::
+  yield @{} expectValid: true
+    title: 'vanilla call async arrow with single line'
+    source: @[] 'fn_target @ async () => value'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', 'name', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with single line expression'
+    source: @[] 'fn_target @=>> value'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', 'name', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with multiple line expression'
+    source: @[]
+      'fn_target @=>>'
+      '  value'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', 'name', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with single line vanilla body'
+    source: @[] 'fn_target @=>> { value }'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', '{', 'name', '}', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with single line body'
+    source: @[] 'fn_target @=>> :: value'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', '{', 'name', '}', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with multiple line body'
+    source: @[]
+      'fn_target @=>> ::'
+      '  value'
+      '  second'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', '{', 'name', 'name', '}', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with multiple line paren expression'
+    source: @[]
+      'fn_target @=>> @'
+      '  value'
+      '  second'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', '(', 'name', ',', 'name', ')', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with multiple line hash expression'
+    source: @[]
+      'fn_target @=>> @:'
+      '  value'
+      '  second'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', '(', '{', 'name', ',', 'name', '}', ')', ')'
+
+  yield @{} expectValid: true
+    title: 'call async arrow with multiple line array expression'
+    source: @[]
+      'fn_target @=>> @#'
+      '  value'
+      '  second'
+    tokens: @[] 'name', '(', 'name', '(', ')', '=>', '(', '[', 'name', ',', 'name', ']', ')', ')'
 
