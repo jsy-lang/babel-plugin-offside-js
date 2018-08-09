@@ -1,7 +1,8 @@
 require('source-map-support').install()
 
 const {genMochaSyntaxTestCases, standardTransforms} = require('./_xform_syntax_variations')
-genMochaSyntaxTestCases @ 'Function Call Statements', iterSyntaxVariations, standardTransforms
+describe @ 'Function Call Statements',
+  genMochaSyntaxTestCases @ iterSyntaxVariations, standardTransforms
 
 
 

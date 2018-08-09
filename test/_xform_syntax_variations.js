@@ -52,8 +52,8 @@ function testSourceTransform(testCase) ::
     assert.deepEqual @ tokens, expected_tokens
 
 
-function genMochaSyntaxTestCases(block_name, iterSyntaxVariations, transformVariations) ::
-  describe @ block_name, @=> ::
+function genMochaSyntaxTestCases(iterSyntaxVariations, transformVariations) ::
+  return @=> ::
     describe @ 'Basic', @=> genSyntaxTestCases @ it, iterSyntaxVariations()
 
     if transformVariations ::
