@@ -2,16 +2,16 @@ import {hookBabylon, asOffsideJSBabylon, installOffsideBabylonParsers} from './p
 import {parseOffsideIndexMap} from './offside_ops'
 import babel_plugin_offside_js, {ensureConsistentBlockIndent} from './plugin'
 
-let installed
-
-export default function() ::
-  if ! installed ::
+var _is_offside_js_installed
+function installed_offside_js() ::
+  if ! _is_offside_js_installed ::
     installOffsideBabylonParsers()
-    installed = true
+    _is_offside_js_installed = true
 
   return babel_plugin_offside_js()
 
-export @{}
+module.exports = installed_offside_js
+Object.assign @ module.exports, @{}
   hookBabylon
   asOffsideJSBabylon
   parseOffsideIndexMap

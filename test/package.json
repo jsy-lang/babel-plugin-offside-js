@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "dependencies": {
+    "babel-plugin-offside-js": "file:.."
+  },
+  "devDependencies": {
+    "chokidar-cli": "^1.2.0",
+    "mocha": "^5.2.0"
+  },
+  "babel": {
+    "plugins": [
+      "offside-js"
+    ]
+  },
+  "scripts": {
+    "pretest:one": "test -d ./node_modules || npm -s install",
+    "test": "npm -s run test:one",
+    "test:one": "mocha --require babel-core/register ./test*.js",
+    "test:min": "mocha --reporter=min --require babel-core/register ./test*.js",
+    "watch": "chokidar -d 1200 -t 15000 '../dist/**' './test*.js' -c 'npm -s run test:min'"
+  }
+}

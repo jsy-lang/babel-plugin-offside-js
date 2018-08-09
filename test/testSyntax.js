@@ -1,4 +1,5 @@
 require('source-map-support').install()
+const assert = require('assert')
 
 //
 //
@@ -14,246 +15,227 @@ require('source-map-support').install()
 //
 //
 
-const tap = require('tap-lite-tester')
+describe @ 'Test Offside Syntax', @=> ::
 
-tap.start()
+  it @ 'Whiles work with parens', @=> ::
+      let x = 10,
+          y = 1,
+      tarr = [],
+      dec = num => num - 1
 
+      assert.equal @ tarr.length, 0
 
-tap.test @ 'Whiles work with parens',
-  t => ::
-    let x = 10,
-        y = 1,
-    tarr = [],
-    dec = num => num - 1
+      const compare = (x, y) => x > y
 
-    t.equal @ tarr.length, 0
+      while @ compare @ x, y ::
+        tarr.push @ x
+        x = dec @ x
 
-    const compare = (x, y) => x > y
+      assert.equal @ tarr.length, 9
 
-    while @ compare @ x, y ::
-      tarr.push @ x
-      x = dec @ x
+  it @ 'Whiles work without parens', @=> ::
+      let x = 10,
+          y = 1,
+      tarr = [],
+      dec = num => num - 1
 
-    t.equal @ tarr.length, 9
+      assert.equal @ tarr.length, 0
 
-tap.test @ 'Whiles work without parens',
-  t => ::
-    let x = 10,
-        y = 1,
-    tarr = [],
-    dec = num => num - 1
+      const compare = (x, y) => x > y
 
-    t.equal @ tarr.length, 0
+      while compare @ x, y ::
+        tarr.push @ x
+        x = dec @ x
 
-    const compare = (x, y) => x > y
+      assert.equal @ tarr.length, 9
 
-    while compare @ x, y ::
-      tarr.push @ x
-      x = dec @ x
+  it @ 'Fors work with parens', @=> ::
+      let tarr =
+        @[] "whale"
+          , "lion"
+          , "frog"
+          , "cat"
 
-    t.equal @ tarr.length, 9
+      const tmap =
+        @{} whale: "whale"
+          , lion: "lion"
+          , frog: "frog"
+          , cat : "cat"
 
-tap.test @ 'Fors work with parens',
-  t => ::
-    let tarr =
-      @[] "whale"
-        , "lion"
-        , "frog"
-        , "cat"
 
-    const tmap =
-      @{} whale: "whale"
-        , lion: "lion"
-        , frog: "frog"
-        , cat : "cat"
+      for (let item of tarr) ::
+        assert.equal @ item, tmap[item]
 
+  it @ 'Fors work without parens', @=> ::
+      let tarr =
+        @[] "whale"
+          , "lion"
+          , "frog"
+          , "cat"
 
-    for (let item of tarr) ::
-      t.equal @ item, tmap[item]
+      const tmap =
+        @{} whale: "whale"
+          , lion: "lion"
+          , frog: "frog"
+          , cat : "cat"
 
-tap.test @ 'Fors work without parens',
-  t => ::
-    let tarr =
-      @[] "whale"
-        , "lion"
-        , "frog"
-        , "cat"
 
-    const tmap =
-      @{} whale: "whale"
-        , lion: "lion"
-        , frog: "frog"
-        , cat : "cat"
+      for let item of tarr ::
+        assert.equal @ item, tmap[item]
 
 
-    for let item of tarr ::
-      t.equal @ item, tmap[item]
+  it @ 'Using @# and @: operators', @=> ::
+      let tarr = @#
+            "whale"
+          , "lion"
+          , "frog"
+          , "cat"
 
+      const tmap = @:
+            whale: "whale"
+          , lion: "lion"
+          , frog: "frog"
+          , cat : "cat"
 
-tap.test @ 'Using @# and @: operators',
-  t => ::
-    let tarr = @#
-          "whale"
-        , "lion"
-        , "frog"
-        , "cat"
 
-    const tmap = @:
-          whale: "whale"
-        , lion: "lion"
-        , frog: "frog"
-        , cat : "cat"
+      for let item of tarr ::
+        assert.equal @ item, tmap[item]
 
 
-    for let item of tarr ::
-      t.equal @ item, tmap[item]
+  it @ 'If works with parens', @=> ::
+      let first_test = true
+      let second_test = false
 
 
-tap.test @ 'If works with parens',
-  t => ::
-    let first_test = true
-    let second_test = false
+      if (first_test) ::
+        second_test = true
 
+      if (second_test) ::
+        first_test = false
 
-    if (first_test) ::
-      second_test = true
+      assert.equal(first_test, false)
 
-    if (second_test) ::
-      first_test = false
+  it @ 'If works without parens', @=> ::
+      let first_test = true
+      let second_test = false
 
-    t.equal(first_test, false)
 
-tap.test @ 'If works without parens',
-  t => ::
-    let first_test = true
-    let second_test = false
+      if first_test ::
+        second_test = true
 
+      if second_test ::
+        first_test = false
 
-    if first_test ::
-      second_test = true
+      assert.equal(first_test, false)
 
-    if second_test ::
-      first_test = false
+  it @ 'Else works with parens', @=> ::
+      let x = false, out,
+          y = true
+      if (x) ::
+        out = x
 
-    t.equal(first_test, false)
+      else if (y) ::
+        out = y
 
-tap.test @ 'Else works with parens',
-  t => ::
-    let x = false, out,
-        y = true
-    if (x) ::
-      out = x
+      else ::
+        out = ''
 
-    else if (y) ::
-      out = y
+      assert.equal @ out, y
 
-    else ::
-      out = ''
+  it @ 'Else works without parens', @=> ::
+      let x = false, out,
+          y = true
+      if x ::
+        out = x
 
-    t.equal @ out, y
+      else if y ::
+        out = y
 
-tap.test @ 'Else works without parens',
-  t => ::
-    let x = false, out,
-        y = true
-    if x ::
-      out = x
+      else ::
+        out = ''
 
-    else if y ::
-      out = y
+      assert.equal @ out, y
 
-    else ::
-      out = ''
 
-    t.equal @ out, y
+  it @ 'Catch works with parens', @=> ::
+      try ::
+        throw new Error @ "error msg"
 
+      catch (error) ::
+        assert.equal @ "error msg", error.message
 
-tap.test @ 'Catch works with parens',
-  t => ::
-    try ::
-      throw new Error @ "error msg"
+  it @ 'Catch works without parens', @=> ::
+      try ::
+        throw new Error @ "error msg"
 
-    catch (error) ::
-      t.equal @ "error msg", error.message
+      catch error ::
+        assert.equal @ "error msg", error.message
 
-tap.test @ 'Catch works without parens',
-  t => ::
-    try ::
-      throw new Error @ "error msg"
+  it @ 'do while works without parens', @=> ::
+      let x = 1,
+          y = 10,
+       tarr = []
 
-    catch error ::
-      t.equal @ "error msg", error.message
+      assert.equal @ tarr.length, 0
 
-tap.test @ 'do while works without parens',
-  t => ::
-    let x = 1,
-        y = 10,
-     tarr = []
+      let dec = i => i - 1
 
-    t.equal @ tarr.length, 0
+      do ::
+        tarr.push(x)
+        y = dec @ y
 
-    let dec = i => i - 1
+      while y > x
 
-    do ::
-      tarr.push(x)
-      y = dec @ y
+      assert.equal @ tarr.length, 9
 
-    while y > x
+  it @ 'do while works with parens', @=> ::
+      let x = 1,
+          y = 10,
+       tarr = []
 
-    t.equal @ tarr.length, 9
+      assert.equal @ tarr.length, 0
 
-tap.test @ 'do while works with parens',
-  t => ::
-    let x = 1,
-        y = 10,
-     tarr = []
+      let dec = i => i - 1
 
-    t.equal @ tarr.length, 0
+      do ::
+        tarr.push(x)
+        y = dec @ y
 
-    let dec = i => i - 1
+      while (y > x)
 
-    do ::
-      tarr.push(x)
-      y = dec @ y
+      assert.equal @ tarr.length, 9
 
-    while (y > x)
+  it @ 'ternary with @ function application', @=> ::
+      let cap = item => item.toUpperCase()
+      let y = true
 
-    t.equal @ tarr.length, 9
+      let x = y
+        ? cap @ 'a'
+        : 'a'
 
-tap.test @ 'ternary with @ function application',
-  t => ::
-    let cap = item => item.toUpperCase()
-    let y = true
+      let g = y ? cap('a') : 'a'
 
-    let x = y
-      ? cap @ 'a'
-      : 'a'
+      assert.equal @ x, g
 
-    let g = y ? cap('a') : 'a'
 
-    t.equal @ x, g
+  it @ 'named-parameters with @: function application', @=> ::
+    const example_one = (opt) => opt
+    assert.deepEqual @ {first: true, second: [1,2,3]},
+      example_one @: first: true, second: @[] 1, 2, 3
 
+    const example_two = (a,b,c) => @: a,b,c
+    assert.deepEqual @ {a: 19, b: 42, c: 1942}, example_two @ 19, 42, 1942
 
-tap.test @ 'named-parameters with @: function application', t => ::
-  const example_one = (opt) => opt
-  t.deepEqual @ {first: true, second: [1,2,3]},
-    example_one @: first: true, second: @[] 1, 2, 3
+  it @ 'chained function application with trailing @:', @=> ::
+    const identity = x => x
+    assert.deepEqual @ {answer: 42},
+      identity @ identity @ identity @:
+        answer: 42
 
-  const example_two = (a,b,c) => @: a,b,c
-  t.deepEqual @ {a: 19, b: 42, c: 1942}, example_two @ 19, 42, 1942
+  it @ 'expressjs-like composite route binding', @=> ::
+    const mock = :: get() ::
+    const wrapper = function(fn) ::
 
-tap.test @ 'chained function application with trailing @:', t => ::
-  const identity = x => x
-  t.deepEqual @ {answer: 42},
-    identity @ identity @ identity @:
-      answer: 42
+    mock.get @ '/someRoute', wrapper @ async (req, res) => ::
+      res.json @ {worked: true}
 
-tap.test @ 'expressjs-like composite route binding', t => ::
-  const mock = :: get() ::
-  const wrapper = function(fn) ::
-
-  mock.get @ '/someRoute', wrapper @ async (req, res) => ::
-    res.json @ {worked: true}
-
-
-tap.finish()

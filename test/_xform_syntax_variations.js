@@ -1,4 +1,5 @@
 const path = require('path')
+const assert = require('assert')
 const babel = require('babel-core')
 
 const babel_opt = @{}
@@ -9,7 +10,7 @@ const babel_opt = @{}
         @{} demo_options: 2142, keyword_blocks: true, implicit_commas: true
 
 
-function testSyntaxError(t, testCase) ::
+function testSyntaxError(testCase) ::
   const block = () => ::
     if (testCase.debug) ::
       console.dir @ testCase.source, @{} colors: true, depth: null
@@ -21,9 +22,9 @@ function testSyntaxError(t, testCase) ::
     if ('ast' === testCase.debug) ::
       console.dir @ res.ast, @{} colors: true, depth: null
 
-  t.throws @ block, SyntaxError
+  assert.throws @ block, SyntaxError
 
-function testSourceTransform(t, testCase) ::
+function testSourceTransform(testCase) ::
   let res
   try ::
     if (testCase.debug) ::
@@ -32,7 +33,7 @@ function testSourceTransform(t, testCase) ::
     res = babel.transform(testCase.source.join('\n'), babel_opt)
   catch (err) ::
     console.error @ err
-    t.fail @ err.message
+    assert.fail @ err.message
 
   if ('code' === testCase.debug) ::
     console.dir @ res.code.split('\n'), @{} colors: true, depth: null
@@ -42,30 +43,39 @@ function testSourceTransform(t, testCase) ::
   if (testCase.tokens) ::
     const tokens = res.ast.tokens
       .map @ token => token.type.label
-    t.deepEqual @ tokens.pop(), 'eof'
+    assert.deepEqual @ tokens.pop(), 'eof'
 
     if ('tokens' === testCase.debug) ::
       console.log @ tokens
     const expected_tokens = Array.from(testCase.tokens)
       .filter @ token => token !== 'eof'
-    t.deepEqual @ tokens, expected_tokens
+    assert.deepEqual @ tokens, expected_tokens
 
 
-function genSyntaxTestCases(tap, iterable_test_cases) ::
+function genMochaSyntaxTestCases(block_name, iterSyntaxVariations, transformVariations) ::
+  describe @ block_name, @=> ::
+    describe @ 'Basic', @=> genSyntaxTestCases @ it, iterSyntaxVariations()
+
+    if transformVariations ::
+      for const [name, xform] of Object.entries @ transformVariations ::
+        describe @ name, @=> genSyntaxTestCases @ it, xform @ iterSyntaxVariations()
+
+
+function genSyntaxTestCases(it, iterable_test_cases) ::
   for (const testCase of iterable_test_cases) ::
     let testFn, title=testCase.title
     if (testCase.expectSyntaxError) ::
       title += ' should THROW a syntax error'
-      testFn = t => testSyntaxError(t, testCase)
+      testFn = @=> testSyntaxError(testCase)
     else ::
-      testFn = t => testSourceTransform(t, testCase)
+      testFn = @=> testSourceTransform(testCase)
 
     if (testCase.only) ::
-      tap.only @ title, testFn
+      it.only @ title, testFn
     else if (testCase.todo) ::
-      tap.todo @ title, testFn
+      it.todo @ title, testFn
     else ::
-      tap.test @ title, testFn
+      it @ title, testFn
 
 function bindIterableTransform(title_suffix, prefix, postfix, options={}) ::
   if 'string' !== typeof prefix ::
@@ -161,6 +171,7 @@ const standardTransforms = Object.assign @ {},
 
 Object.assign @ exports, @{}
   babel_opt
+  genMochaSyntaxTestCases
   genSyntaxTestCases
   bindIterableTransform
   standardTransforms

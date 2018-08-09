@@ -1,17 +1,13 @@
 require('source-map-support').install()
+
 const {genSyntaxTestCases, asyncFunctionTransforms} = require('./_xform_syntax_variations')
 
-const tap = require('tap-lite-tester')
-tap.start()
+describe @ 'For Await Of Statements', @=> ::
+  const {inAsyncFunction} = asyncFunctionTransforms
+  const transforms = 1 ? asyncFunctionTransforms : {inAsyncFunction}
 
-if 0 ::
-  genSyntaxTestCases @ tap,
-    asyncFunctionTransforms.inAsyncFunction @ iterSyntaxVariations()
-else ::
-  for let xform of Object.values @ asyncFunctionTransforms ::
-    genSyntaxTestCases @ tap, xform @ iterSyntaxVariations()
-
-tap.finish()
+  for const [name, xform] of Object.entries @ transforms ::
+    describe @ name, @=> genSyntaxTestCases @ it, xform @ iterSyntaxVariations()
 
 
 function * iterSyntaxVariations() ::

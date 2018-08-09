@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-offside-js",
-  "version": "0.10.2",
+  "version": "0.10.3-0",
   "description": "Babel offside (indention) Javascript syntax extension",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
   "license": "BSD-2-Clause",
@@ -23,9 +23,8 @@
   "main": "dist/index.js",
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
-    "tap-lite-tester": "^0.5.2"
+    "babel-core": "^6.26.3",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2"
   },
   "babel": {
     "env": {
@@ -54,8 +53,10 @@
     "prepublish": "npm -s run build-stable && npm -s run test",
     "predebug": "npm -s run build && npm -s run build-tests",
     "debug": "OFFSIDE_DEBUG=true node dist-test/testSimple.js",
-    "pretest": "npm -s run build && npm -s run build-tests",
-    "test": "node dist-test/all.js dist-test/test*.js",
-    "testone": "node dist-test/all.js dist-test/testFunctionCall.js"
+    "pretest": "npm -s run build",
+    "test": "cd test; npm -s run test",
+    "test:install": "cd test; npm -s install",
+    "test:one": "cd test; npm -s run test:one",
+    "test:watch": "cd test; npm -s run test:watch"
   }
 }
