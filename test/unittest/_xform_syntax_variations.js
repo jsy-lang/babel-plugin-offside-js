@@ -1,21 +1,12 @@
-const path = require('path')
 const assert = require('assert')
-const babel = require('babel-core')
-
-const babel_opt = @{}
-  babelrc: false
-  highlightCode: false
-  plugins: @[]
-    @[] path.resolve(__dirname, '../dist/')
-        @{} demo_options: 2142, keyword_blocks: true, implicit_commas: true
-
+const jsy_as_babel_ast = require('./_jsy_as_babel_ast')
 
 function testSyntaxError(testCase) ::
   const block = () => ::
     if (testCase.debug) ::
       console.dir @ testCase.source, @{} colors: true, depth: null
 
-    let res = babel.transform(testCase.source.join('\n'), babel_opt)
+    let res = jsy_as_babel_ast @ testCase.source
 
     if ('code' === testCase.debug) ::
       console.dir @ res.code.split('\n'), @{} colors: true, depth: null
@@ -30,7 +21,7 @@ function testSourceTransform(testCase) ::
     if (testCase.debug) ::
       console.dir @ testCase.source, @{} colors: true, depth: null
 
-    res = babel.transform(testCase.source.join('\n'), babel_opt)
+    res = jsy_as_babel_ast @ testCase.source
   catch (err) ::
     console.error @ err
     assert.fail @ err.message
@@ -170,7 +161,6 @@ const standardTransforms = Object.assign @ {},
   blockTransforms, functionTransforms, asyncFunctionTransforms
 
 Object.assign @ exports, @{}
-  babel_opt
   genMochaSyntaxTestCases
   genSyntaxTestCases
   bindIterableTransform
