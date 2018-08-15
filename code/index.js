@@ -12,6 +12,7 @@ function installed_offside_js() ::
 
 module.exports = installed_offside_js
 Object.assign @ module.exports, @{}
+  default: installed_offside_js
   hookBabylon
   asOffsideJSBabylon
   parseOffsideIndexMap
